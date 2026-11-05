@@ -1,0 +1,193 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fdf6ee"><link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<title>푸른나무교회 성경 통독하기</title>
+<style>
+:root{--bg:#fdf6ee;--ink:#2f3e5c;--sub:#5c6a86;--line:#eadfd2;--sk:#cbe6fa;--c1:#FFF0B0;--c2:#D9F3C9;--c3:#CBE6FA;--c4:#F9D3E3;--fs:17px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:var(--fs)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;padding-top:env(safe-area-inset-top)}
+button,input{font:inherit;color:inherit}select{font:inherit;color:inherit}
+#cover{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(160deg,#d6eafb,#fde0ea 55%,#fff0c4);overflow:hidden}
+#cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.box{position:relative;background:rgba(255,255,255,.86);backdrop-filter:blur(6px);border-radius:30px;padding:30px 24px 26px;width:min(88%,380px);box-shadow:0 12px 40px #6f7fa526}
+.box h1{margin:8px 0 14px;font-size:1.65rem;line-height:1.35;letter-spacing:-.02em}
+.gr{margin:0 0 16px;font-size:1.05rem;line-height:1.6}
+#nm{width:100%;border:2px solid var(--sk);background:#fff;border-radius:16px;padding:14px;font-size:1.1rem;text-align:center;outline:none;margin-bottom:14px}
+.go{width:100%;border:0;border-radius:16px;padding:15px;font-size:1.15rem;font-weight:700;background:#BFE5C4}
+#chg{display:inline-block;margin-top:14px;font-size:.8rem;color:var(--sub);text-decoration:underline;padding:6px}
+.shake{animation:sh .4s}@keyframes sh{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+#app{display:none;padding:10px 14px 60px;max-width:680px;margin:0 auto}
+#upd{display:none;background:var(--c1);padding:12px;border-radius:14px;text-align:center;margin-bottom:10px;font-weight:700}
+.bn{background:#fff;border:2px solid var(--c1);border-radius:14px;padding:11px 13px;margin-bottom:10px;font-size:.85rem;line-height:1.5}
+h2{margin:4px 0 8px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;gap:6px}
+.stk{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;background:var(--bg);padding:4px 0 8px}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.tg{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:8px 12px;font-weight:700;font-size:.85rem}
+.tg.fx{background:var(--sk);border-color:var(--sk)}.tg.fx.on{background:#9cc8ee;border-color:#9cc8ee}
+.tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:2px solid transparent;border-radius:14px;padding:10px 14px;font-size:.88rem;white-space:nowrap;opacity:.72}
+.tab.on{opacity:1;font-weight:700;border-color:var(--ink)}.tab.pl{background:#fff;border:2px dashed var(--line);opacity:1}
+.card{background:#fff;border-radius:22px;padding:14px;margin-bottom:12px;box-shadow:0 4px 18px #7f8fb314}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.sub{color:var(--sub);font-size:.82rem}.prog{font-weight:700;color:var(--sub);font-size:.9rem}
+.sm{border:0;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.82rem;font-weight:600}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.st{display:grid;grid-template-columns:2.6em 1fr 3.8em;gap:8px;align-items:center;margin:8px 0;font-size:.9rem}
+.st em{font-style:normal;text-align:right;font-weight:700}
+.pb{position:relative;height:13px;background:var(--bg);border-radius:9px;overflow:hidden}.pb i{position:absolute;left:0;top:0;height:100%;border-radius:0 9px 9px 0;transition:width .4s}
+.lg{display:flex;gap:6px;flex-wrap:wrap;font-size:.74rem;margin-top:8px}.lg span{padding:3px 9px;border-radius:9px}
+.mini{font-size:.78rem;color:var(--sub);text-align:center;margin-top:8px}
+select{border:2px solid var(--sk);border-radius:14px;background:#fff;padding:10px 12px;font-weight:700;max-width:60%}
+.g{display:grid;gap:6px;margin-top:10px}
+.c{position:relative;aspect-ratio:1;border:1.5px solid var(--line);background:#fff;border-radius:11px;font-weight:600;padding:0;display:flex;align-items:center;justify-content:center}
+.k10 .c{font-size:.72rem;border-radius:9px}.k5 .c{font-size:1.15rem}
+.v1{background:var(--c1)!important}.v2{background:var(--c2)!important}.v3{background:var(--c3)!important}.v4{background:var(--c4)!important}.vu{background:#D9CCF2!important}
+.ck::after{content:"✓";position:absolute;right:3px;top:0;font-size:.7em;color:#3e7d54}
+.pop{animation:pp .3s}@keyframes pp{50%{transform:scale(1.18)}}
+.seg{display:flex;background:#fff;border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:none;padding:9px 12px;font-size:.82rem}.seg .on{background:#E4DBF6;font-weight:700}
+.map{display:grid;gap:2px 2px;margin-top:6px}
+.map h4{grid-column:1/-1;margin:12px 0 4px;font-size:.95rem}
+.map i{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#fff;border:1px solid var(--line);font-style:normal}
+.map u{text-decoration:none}.map span{display:block}
+.lb{border:0;background:var(--bg);border-radius:7px;font-size:.78rem;font-weight:700;padding:0}
+.dt{grid-column:1/-1;font-size:var(--fs);background:var(--bg);border-radius:16px;padding:12px;margin:4px 0}
+.big{width:100%;border:0;border-radius:14px;background:var(--sk);padding:13px;font-weight:700;margin-top:8px}
+.mo{position:fixed;inset:0;background:#2f3e5c55;z-index:9;display:flex;align-items:center;justify-content:center}
+.md{background:#fff;border-radius:22px;padding:20px;width:min(86%,340px)}.md p{margin:0 0 12px;line-height:1.5}
+.md input{width:100%;border:2px solid var(--sk);border-radius:12px;padding:11px;margin-bottom:10px}
+.md button{display:block;width:100%;border:0;border-radius:13px;padding:13px;margin-top:8px;background:var(--sk);font-weight:600}.md button:last-child{background:var(--bg)}
+.sw{display:flex;gap:8px;margin:2px 0 8px}.sw b{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line)}.sw b.on{box-shadow:0 0 0 3px var(--ink)}
+.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:14px;z-index:10;font-size:.9rem;max-width:88%;text-align:center}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div id="cover"><img src="cover.jpg?v=2" alt="" onerror="this.remove()"><div class="box"><div id="tr"></div><h1>푸른나무교회<br>성경 통독하기</h1><div id="cvb"></div></div></div>
+<div id="app"><div id="upd">새 버전이 있어요. 눌러서 업데이트</div><div id="ban"></div><h2 id="tt"></h2><div class="stk"><div class="bar" id="bar"></div><div class="tabs" id="tabs"></div></div><div id="main"></div></div>
+<input type="file" id="imp" hidden>
+<script>
+const VER='2.0.0',KEY='bible_v1';
+const B=[];'창세기50,출애굽기40,레위기27,민수기36,신명기34,여호수아24,사사기21,룻기4,사무엘상31,사무엘하24,열왕기상22,열왕기하25,역대상29,역대하36,에스라10,느헤미야13,에스더10,욥기42,시편150,잠언31,전도서12,아가8,이사야66,예레미야52,예레미야애가5,에스겔48,다니엘12,호세아14,요엘3,아모스9,오바댜1,요나4,미가7,나훔3,하박국3,스바냐3,학개2,스가랴14,말라기4,마태복음28,마가복음16,누가복음24,요한복음21,사도행전28,로마서16,고린도전서16,고린도후서13,갈라디아서6,에베소서6,빌립보서4,골로새서4,데살로니가전서5,데살로니가후서3,디모데전서6,디모데후서4,디도서3,빌레몬서1,히브리서13,야고보서5,베드로전서5,베드로후서3,요한일서5,요한이서1,요한삼서1,유다서1,요한계시록22'.replace(/([^\d,]+)(\d+)/g,(m,n,c)=>B.push({n,c:+c}));
+const AB='창,출,레,민,신,수,삿,룻,삼상,삼하,왕상,왕하,대상,대하,스,느,에,욥,시,잠,전,아,사,렘,애,겔,단,호,욜,암,옵,욘,미,나,합,습,학,슥,말,마,막,눅,요,행,롬,고전,고후,갈,엡,빌,골,살전,살후,딤전,딤후,딛,몬,히,약,벧전,벧후,요일,요이,요삼,유,계'.split(',');
+const OT=39,OTC=929,NTC=260,TOT=1189,PAL=['#E4DBF6','#FFD8CC','#C9EEE2','#FFE0B5','#F0D5F2','#D5DEEE'];
+const CL=['','var(--c1)','var(--c2)','var(--c3)','var(--c4)'],NM=['한 번','두 번','세 번','네 번'],ORD=['','첫','두','세','네','다섯','여섯','일곱','여덟','아홉','열'];
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>{const d=new Date();return (d.getMonth()+1)+'월 '+d.getDate()+'일'};
+const mk=(n,c)=>({id:uid(),name:n,color:c,round:1,start:today(),base:{},read:{}});
+const TR=s=>'<svg viewBox="0 0 64 64" width="'+s+'" height="'+s+'" style="vertical-align:middle"><circle cx="32" cy="24" r="18" fill="#BFE5C4"/><circle cx="20" cy="33" r="12" fill="#CDEBD0"/><circle cx="44" cy="33" r="12" fill="#B3DEB9"/><rect x="29" y="40" width="6" height="17" rx="3" fill="#E8C9A8"/></svg>';
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{name:'',tables:[],ui:{}};
+S.ui=Object.assign({cols:10,ocols:innerWidth>700?20:10,fs:0,tab:0,book:0,view:'c',open:-1},S.ui);
+S.tables.forEach((t,i)=>{t.base=t.base||{};t.round=t.round||1;t.color=t.color==null?i%6:t.color;t.start=t.start||''});
+(S.arch||[]).forEach(a=>S.tables.push({id:a.id,name:a.name,color:0,round:1,start:'',base:{},read:a.read}));delete S.arch;
+S.since=S.since||Date.now();if(!S.tables.length)S.tables.push(mk('내 통독표',0));
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const cnt=(t,b,i)=>((t.base[b]||[])[i]|0)+((t.read[b]||[])[i]|0);
+const pc=(x,t)=>(x/t*100).toFixed(1);
+const hasMark=t=>Object.values(t.read).some(a=>a.some(x=>x));
+function st(f){const r={o:[0,0,0,0],n:[0,0,0,0]};B.forEach((k,b)=>{const a=b<OT?r.o:r.n;for(let i=0;i<k.c;i++){const v=f(b,i);for(let j=0;j<4;j++)if(v>j)a[j]++}});return r}
+const rd=(f,b)=>{let d=0;for(let i=0;i<B[b].c;i++)if(f(b,i)>0)d++;return d};
+const cc=v=>v?' v'+Math.min(v,4):'';
+function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2400)}
+function ask(m,bs){return new Promise(r=>{const d=document.createElement('div');d.className='mo';d.innerHTML='<div class="md"><p>'+m+'</p>'+bs.map((b,i)=>'<button data-q="'+i+'">'+b+'</button>').join('')+'</div>';d.onclick=e=>{const i=e.target.dataset.q;if(i!=null){d.remove();r(+i)}};document.body.append(d)})}
+function askIn(m,v,col){return new Promise(r=>{let ci=col;const d=document.createElement('div');d.className='mo';
+ d.innerHTML='<div class="md"><p>'+m+'</p><input id="ai" maxlength="14" value="'+esc(v)+'">'+(col!=null?'<div class="sw">'+PAL.map((c,i)=>'<b data-s="'+i+'" style="background:'+c+'" class="'+(i==col?'on':'')+'"></b>').join('')+'</div>':'')+'<button data-q="0">확인</button><button data-q="1">취소</button></div>';
+ d.onclick=e=>{const s=e.target.dataset.s;if(s!=null){ci=+s;d.querySelectorAll('.sw b').forEach((x,i)=>x.classList.toggle('on',i==ci));return}
+  const q=e.target.dataset.q;if(q!=null){const val=$('#ai').value.trim();d.remove();r(q==0&&val?{v:val,c:ci}:null)}};
+ document.body.append(d);setTimeout(()=>$('#ai').focus(),50)})}
+function bars(r,m){const rows=[['구약',r.o,OTC],['신약',r.n,NTC],['전체',r.o.map((x,j)=>x+r.n[j]),TOT]];
+ let h=rows.map(([n,a,t])=>{const ly=m=='u'?'<i style="width:'+pc(a[0],t)+'%;background:#D9CCF2;z-index:1"></i>':[0,1,2,3].filter(j=>j==0||a[j]>0).map(j=>'<i style="width:'+pc(a[j],t)+'%;background:'+CL[j+1]+';z-index:'+(j+1)+'"></i>').join('');
+  return '<div class="st"><span>'+n+'</span><div class="pb">'+ly+'</div><em>'+pc(a[0],t)+'%</em></div>'}).join('');
+ if(m=='u')return h+'<div class="mini" style="text-align:left">몇 번 읽었든 한 번이라도 읽은 장의 비율이에요</div>';
+ const T=rows[2][1];h+='<div class="mini" style="text-align:left">한 번 이상 읽음'+[1,2,3].filter(j=>T[j]>0).map(j=>' · '+NM[j]+' 이상 읽음 '+pc(T[j],TOT)+'%').join('')+'</div>';
+ return h+'<div class="lg">'+NM.map((n,j)=>'<span style="background:'+CL[j+1]+'">'+n+(j==3?' 이상':'')+'</span>').join('')+'</div>'}
+function bsel(f){let h='<select id="bs">';B.forEach((k,b)=>{if(b==0)h+='<optgroup label="구약">';if(b==OT)h+='</optgroup><optgroup label="신약">';h+='<option value="'+b+'"'+(b==S.ui.book?' selected':'')+'>'+k.n+(rd(f,b)==k.c?' ✓':'')+'</option>'});return h+'</optgroup></select>'}
+let pop=-1;
+function tbHtml(t){const f=(b,i)=>cnt(t,b,i),n=S.ui.book,a=t.read[n]||[],cl=PAL[t.color];
+ const cells=Array.from({length:B[n].c},(_,i)=>'<button class="c'+cc(f(n,i))+(a[i]&&t.round>1?' ck':'')+(pop==i?' pop':'')+'" data-i="'+i+'">'+(i+1)+'</button>').join('');
+ return '<div class="card" style="background:'+cl+'55;border:2px solid '+cl+'"><div class="trow"><b>'+esc(t.name)+'</b><span class="sub">'+ORD[Math.min(t.round,10)]+' 번째 읽는 중'+(t.start?' · '+t.start+' 시작':'')+'</span></div>'+bars(st(f),'c')+'</div>'
+ +'<div class="card" style="border:2px solid '+cl+'"><div class="trow">'+bsel(f)+'<span class="prog">'+rd(f,n)+' / '+B[n].c+'장</span></div><div class="g k'+S.ui.cols+'" style="grid-template-columns:repeat('+S.ui.cols+',1fr)">'+cells+'</div></div>'
+ +'<div class="acts"><button class="sm" data-act="new">새로 읽기</button>'+(t.round>1?'<button class="sm" data-act="keep">이번 회차만 남기기</button>':'')+'<button class="sm" data-act="del">이 통독표 삭제</button></div>'}
+function ovHtml(){const u=S.ui,un=u.view=='u',f=(b,i)=>S.tables.reduce((s,t)=>s+cnt(t,b,i),0),r=st(f);let full=1e9;B.forEach((k,b)=>{for(let i=0;i<k.c;i++)full=Math.min(full,f(b,i))});
+ let h='<div class="card"><div class="trow"><div class="seg"><button data-act="view" data-v="c" class="'+(un?'':'on')+'">통독현황 보기</button><button data-act="view" data-v="u" class="'+(un?'on':'')+'">중복제거 보기</button></div>'+(un?'':'<span class="prog">성경 완독 '+full+'회</span>')+'</div>'+bars(r,un?'u':'c')+'<div class="mini" style="text-align:left">합산한 통독표: '+S.tables.map(x=>esc(x.name)).join(', ')+'</div></div>';
+ const N=u.ocols,fs={10:.78,15:.62,20:.5,25:.42}[N];
+ h+='<div class="card"><div class="map" style="grid-template-columns:2.6rem repeat('+N+',1fr);font-size:'+fs+'rem">';
+ B.forEach((k,b)=>{if(b==0)h+='<h4>구약 39권 929장</h4>';if(b==OT)h+='<h4>신약 27권 260장</h4>';
+  for(let s=0;s<k.c;s+=N){h+=s?'<span></span>':'<button class="lb" data-b="'+b+'">'+AB[b]+'</button>';
+   for(let i=s;i<s+N;i++){if(i<k.c){const v=f(b,i);h+='<i class="'+(un?(v?'vu':''):cc(v).trim())+'">'+(i+1)+'</i>'}else h+='<u></u>'}}
+  if(u.open===b)h+='<div class="dt"><div class="trow"><b>'+k.n+'</b><span class="prog">'+rd(f,b)+' / '+k.c+'장</span></div><div class="g k10" style="grid-template-columns:repeat(10,1fr)">'+Array.from({length:k.c},(_,i)=>{const v=f(b,i);return '<div class="c'+(un?(v?' vu':''):cc(v))+'">'+(i+1)+'</div>'}).join('')+'</div></div>'});
+ h+='</div></div><div class="card"><b>백업과 이동</b><button class="big" data-act="exp">내보내기 (파일로 공유)</button><button class="big" data-act="cpy">복사하기 (글자로)</button><button class="big" data-act="imp">불러오기</button><div class="mini">마지막 백업: '+(S.last||'아직 없음')+'</div><button class="big" style="background:var(--bg)" data-act="chk">새 버전 확인</button><div class="mini">버전 '+VER+'</div></div>';
+ return h}
+function banners(){const ua=navigator.userAgent,ios=/iPhone|iPad/.test(ua);let h='';
+ if(/KAKAOTALK/i.test(ua))h+='<div class="bn">카카오톡 안에서 열렸어요. '+(ios?'오른쪽 아래':'오른쪽 위')+' 메뉴에서 「다른 브라우저로 열기」(또는 사파리로 열기)를 눌러 주세요. 여기서 쓴 기록은 다른 브라우저에서 보이지 않아요.</div>';
+ else if(!S.hint&&!(matchMedia('(display-mode: standalone)').matches||navigator.standalone))h+='<div class="bn" data-act="hint">'+(ios?'아이폰: 사파리 아래 공유 버튼 → 「홈 화면에 추가」. 꼭 홈 화면의 아이콘으로 시작하세요.':'갤럭시: 메뉴(⋮) → 「홈 화면에 추가」 또는 「앱 설치」를 눌러 주세요.')+'<br><b>눌러서 닫기</b></div>';
+ if(Date.now()-(S.lastT||S.since)>30*864e5)h+='<div class="bn" data-act="all">백업한 지 한 달이 지났어요. 눌러서 나의 통독 현황 아래에서 백업해 두세요.</div>';
+ return h}
+function render(y){const u=S.ui;if(u.tab>=S.tables.length)u.tab=0;const ov=u.tab<0,t=ov?null:S.tables[u.tab];
+ document.documentElement.style.setProperty('--fs',[17,21][u.fs]+'px');
+ $('#tt').innerHTML=TR(28)+'<span>'+esc(S.name)+'의 성경읽기 ✎</span>';
+ $('#bar').innerHTML='<button class="tg" data-act="fs">글자 '+['보통','크게'][u.fs]+'</button><button class="tg" data-act="cols">'+(ov?u.ocols:u.cols)+'열</button><span style="flex:1"></span><button class="tg fx'+(ov?' on':'')+'" data-act="all">나의 통독 현황</button>';
+ $('#tabs').innerHTML=S.tables.map((x,i)=>{const on=!ov&&u.tab==i;return '<button class="tab'+(on?' on':'')+'" style="background:'+PAL[x.color]+'" data-t="'+i+'">'+esc(x.name)+(on?' ✎':'')+'</button>'}).join('')+'<button class="tab pl" data-act="add">＋ 새 통독표</button>';
+ $('#main').innerHTML=ov?ovHtml():tbHtml(t);$('#ban').innerHTML=banners();pop=-1;if(y!=null)scrollTo(0,y)}
+const gr=()=>{const h=new Date().getHours();return h<12?'좋은 아침이에요':h<18?'좋은 오후예요':'편안한 저녁이에요'};
+function showCover(){$('#tr').innerHTML=TR(64);$('#cvb').innerHTML=S.name?'<p class="gr">'+gr()+', '+esc(S.name)+'님.<br>오늘도 시작해볼까요?</p><button class="go" id="go">시작하기</button><div><a id="chg">이름 바꾸기</a></div>':'<p class="gr">이름을 적고 시작을 눌러 주세요</p><input id="nm" maxlength="12" placeholder="이름 입력" autocomplete="off"><button class="go" id="go">시작하기</button>';
+ const n=$('#nm');if(n)n.onkeydown=e=>{if(e.key=='Enter')go()}}
+function go(){if(!S.name){const n=$('#nm'),v=n.value.trim();if(!v){n.focus();n.classList.add('shake');setTimeout(()=>n.classList.remove('shake'),450);toast('이름을 먼저 적어 주세요');return}S.name=v;save()}
+ $('#cover').style.display='none';$('#app').style.display='block';render(0)}
+$('#cover').onclick=async e=>{const id=e.target.id;if(id=='go')go();else if(id=='chg'){const r=await askIn('이름을 고쳐 주세요',S.name);if(r){S.name=r.v;save();showCover()}}};
+$('#tt').onclick=async()=>{const r=await askIn('이름을 고쳐 주세요',S.name);if(r){S.name=r.v;save();render()}};
+$('#upd').onclick=()=>location.reload();
+document.addEventListener('change',e=>{if(e.target.id=='bs'){S.ui.book=+e.target.value;S.ui.open=-1;save();render()}});
+document.addEventListener('click',async e=>{
+ const el=e.target.closest('[data-act],[data-i],[data-t],[data-b]');if(!el||el.closest('.mo')||$('#app').style.display!='block')return;
+ const D=el.dataset,u=S.ui,y=scrollY,ov=u.tab<0,t=S.tables[u.tab];
+ if(D.i!=null){const a=t.read[u.book]||(t.read[u.book]=Array(B[u.book].c).fill(0)),i=+D.i;a[i]=a[i]?0:1;pop=a[i]?i:-1;save();render(y);if(a[i]&&a.every(x=>x))toast(B[u.book].n+' 읽기를 마쳤어요. 축하해요!');return}
+ if(D.t!=null){if(+D.t==u.tab){const r=await askIn('통독표 이름과 색을 골라 주세요',t.name,t.color);if(r){t.name=r.v;t.color=r.c;save();render(y)}}else{u.tab=+D.t;save();render(0)}return}
+ if(D.b!=null){u.open=u.open==+D.b?-1:+D.b;save();render(y);return}
+ switch(D.act){
+  case 'fs':u.fs=1-u.fs;save();render(y);break;
+  case 'cols':if(ov){const o=[10,15,20,25];u.ocols=o[(o.indexOf(u.ocols)+1)%4]}else u.cols=u.cols==10?5:10;save();render(y);break;
+  case 'all':u.tab=-1;save();render(0);break;
+  case 'view':u.view=D.v;save();render(y);break;
+  case 'hint':S.hint=1;save();render(y);break;
+  case 'add':{const r=await askIn('새 통독표 이름을 적어 주세요','새 통독표',S.tables.length%6);if(r){S.tables.push(mk(r.v,r.c));u.tab=S.tables.length-1;save();render(0)}break}
+  case 'new':{if(!hasMark(t)){toast('새로 읽을 체크가 아직 없어요');break}
+   if(await ask('지금까지 화면에 체크한 기록을 삭제할까요?',['확인','취소'])!=0)break;
+   const q=await ask('이 통독표에서 읽은 기록은 남길까요?',['남기기','남기지 않기','취소']);if(q==2)break;
+   if(q==0){Object.keys(t.read).forEach(b=>{const a=t.base[b]||(t.base[b]=Array(B[b].c).fill(0));t.read[b].forEach((v,i)=>{a[i]=Math.min(9,a[i]+v)})});t.read={};t.round++}
+   else{if(await ask('읽은 기록을 모두 완전히 삭제하겠습니다.',['확인','취소'])!=0)break;t.read={};t.base={};t.round=1}
+   t.start=today();save();render(0);toast(q==0?'기록을 남기고 새로 시작했어요':'처음부터 새로 시작했어요');break}
+  case 'keep':if(await ask('이전에 읽은 기록은 지우고, 이번에 체크한 칸만 남길까요?<br>이번에 읽은 칸은 노랑으로, 나머지는 흰색으로 바뀌고 첫 번째 읽기로 돌아가요.',['확인','취소'])==0){t.base={};t.round=1;save();render(y)}break;
+  case 'del':{if(await ask('지금 읽고 계신 「'+esc(t.name)+'」 통독표가 사라져요.<br>그래도 삭제하시겠어요?',['삭제하기','취소'])!=0)break;
+   if(await ask('읽은 기록을 모두 완전히 삭제하겠습니다.<br>나의 통독 현황에서도 줄어들어요.',['확인','취소'])!=0)break;
+   S.tables.splice(u.tab,1);if(!S.tables.length)S.tables.push(mk('내 통독표',0));u.tab=0;save();render(0);toast('삭제했어요');break}
+  case 'exp':exp();break;
+  case 'cpy':cpy();break;
+  case 'imp':{const q=await ask('어떻게 불러올까요?',['글자 붙여넣기 (쉬워요)','파일 선택','취소']);if(q==1)$('#imp').click();else if(q==0){const v=await askText();if(v){try{await apply(parse(v).data)}catch(x){toast('붙여넣은 글자가 올바르지 않아요')}}}break}
+  case 'chk':toast('확인 중이에요…');try{await fetch('./')}catch(x){toast('인터넷에 연결되어 있지 않아요');break}setTimeout(()=>location.reload(),1800);break}});
+const ps=a=>a.join(''),us=s=>typeof s=='string'?s.split('').map(Number):s,mp=(o,f)=>Object.fromEntries(Object.entries(o||{}).map(([b,a])=>[b,f(a)]));
+const pt=t=>({id:t.id,name:t.name,color:t.color,round:t.round,start:t.start,read:mp(t.read,ps),base:mp(t.base,ps)});
+const ut=t=>({id:t.id||uid(),name:t.name||'통독표',color:t.color|0,round:t.round||1,start:t.start||'',read:mp(t.read,us),base:mp(t.base,us)});
+const pack=()=>JSON.stringify({app:'bible',v:3,data:{name:S.name,tables:S.tables.map(pt)}});
+const stamp=()=>{S.last=new Date().toLocaleDateString('ko-KR');S.lastT=Date.now();save()};
+async function exp(){const d=new Date(),p=n=>String(n).padStart(2,'0'),fn='성경통독백업_'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'.json';
+ const file=new File([pack()],fn,{type:'application/json'});
+ if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});stamp();render();return}catch(e){if(e.name=='AbortError')return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=fn;a.click();stamp();render()}
+async function cpy(){const t='BIBLE1:'+btoa(unescape(encodeURIComponent(pack())));
+ try{await navigator.clipboard.writeText(t)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.append(x);x.select();document.execCommand('copy');x.remove()}
+ stamp();render();toast('복사했어요. 카톡 나에게 보내기에 붙여넣으세요')}
+function parse(s){s=String(s).trim();const i=s.indexOf('BIBLE1:');return JSON.parse(i>=0?decodeURIComponent(escape(atob(s.slice(i+7).replace(/\s/g,'')))):s)}
+function askText(){return new Promise(r=>{const d=document.createElement('div');d.className='mo';d.innerHTML='<div class="md"><p>복사해 둔 백업 글자를 붙여넣어 주세요.</p><textarea id="pt" rows="5" style="width:100%;border:2px solid var(--sk);border-radius:12px;padding:10px;font-size:.8rem"></textarea><button data-q="0">불러오기</button><button data-q="1">취소</button></div>';d.onclick=e=>{const i=e.target.dataset.q;if(i!=null){const v=$('#pt').value;d.remove();r(i==0?v:null)}};document.body.append(d)})}
+async function apply(d){if(!d||!Array.isArray(d.tables))throw 0;const T=d.tables.map(ut);
+ const c=await ask('백업에 통독표가 '+T.length+'개 있어요.',['합치기 (지금 기록 유지)','덮어쓰기 (지금 기록 삭제)','취소']);if(c==2)return;
+ if(c==1){S.tables=T;S.name=d.name||S.name}
+ else{T.forEach(t=>{const m=S.tables.find(x=>x.id==t.id);if(!m)S.tables.push(t);else{Object.keys(t.read).forEach(b=>{const a=m.read[b]||(m.read[b]=Array(B[b].c).fill(0));t.read[b].forEach((v,i)=>{if(v)a[i]=1})});Object.keys(t.base).forEach(b=>{const a=m.base[b]||(m.base[b]=Array(B[b].c).fill(0));t.base[b].forEach((v,i)=>{a[i]=Math.max(a[i],v)})});m.round=Math.max(m.round,t.round)}});if(!S.name)S.name=d.name||''}
+ if(!S.tables.length)S.tables.push(mk('내 통독표',0));S.ui.tab=0;save();render(0);toast('불러왔어요')}
+$('#imp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await apply(parse(await f.text()).data)}catch(x){toast('올바른 백업 파일이 아니에요')}e.target.value=''};
+if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});navigator.serviceWorker.addEventListener('message',e=>{if(e.data=='update')$('#upd').style.display='block'})}
+showCover();
+</script></body></html>
