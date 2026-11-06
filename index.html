@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fdf6ee"><link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<title>푸른나무교회 성경 통독하기</title>
+<style>
+:root{--bg:#fdf6ee;--ink:#2f3e5c;--sub:#5c6a86;--line:#eadfd2;--sk:#cbe6fa;--c1:#FFF0B0;--c2:#D9F3C9;--c3:#CBE6FA;--c4:#F9D3E3;--fs:17px;--d1:#F2C94C;--d2:#79C768;--d3:#4FA3E8;--d4:#EC7BA6;--du:#9B7FD6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:var(--fs)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;padding-top:env(safe-area-inset-top)}
+button,input,select,textarea{font:inherit;color:inherit}
+.b{height:40px;padding:0 14px;border-radius:12px;font-size:.85rem;font-weight:600;border:1.5px solid var(--line);background:#fff;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.b.on{background:#E4DBF6;border-color:#cdbff0}.b.fx{background:var(--sk);border-color:var(--sk)}.b.fx.on{background:#9cc8ee;border-color:#9cc8ee}.b.w{width:100%;margin-top:10px}
+.inf{font-size:.9rem;color:var(--sub);font-weight:600}
+#cover{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(160deg,#d6eafb,#fde0ea 55%,#fff0c4);overflow:hidden}
+#cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.box{position:relative;background:rgba(255,255,255,.86);backdrop-filter:blur(6px);border-radius:30px;padding:30px 24px 20px;width:min(88%,380px);box-shadow:0 12px 40px #6f7fa526}
+.box h1{margin:8px 0 14px;font-size:1.6rem;line-height:1.35;letter-spacing:-.02em}
+.gr{margin:0 0 16px;font-size:1.05rem;line-height:1.6}
+#nm{width:100%;border:2px solid var(--sk);background:#fff;border-radius:16px;padding:14px;font-size:1.1rem;text-align:center;outline:none;margin-bottom:14px}
+.go{width:100%;border:0;border-radius:16px;padding:15px;font-size:1.15rem;font-weight:700;background:#BFE5C4}
+.lks{display:flex;justify-content:center;gap:18px;margin-top:12px}.lks a,.ft a{font-size:.8rem;color:var(--sub);text-decoration:underline;padding:8px 4px}
+.shake{animation:sh .4s}@keyframes sh{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+#app{display:none;padding:10px 14px 40px;max-width:680px;margin:0 auto}
+#upd{display:none;background:var(--c1);padding:12px;border-radius:14px;text-align:center;margin-bottom:10px;font-weight:700}
+.bn{background:#fff;border:2px solid var(--c1);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:.85rem;line-height:1.55}
+.bn .b{margin:8px 8px 0 0}
+.stk{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;background:var(--bg);padding:4px 0 10px}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+h2{margin:0;font-size:1rem;display:flex;align-items:center;gap:6px;min-width:0;cursor:pointer}h2 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:2px solid transparent;opacity:.75}.tab.on{opacity:1;border-color:var(--ink);font-weight:700}.tab.pl{background:#fff;border:2px dashed var(--line);opacity:1}
+.card{background:#fff;border-radius:22px;padding:14px;margin-bottom:14px;box-shadow:0 4px 18px #7f8fb314}
+.trow{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:40px}.trow:last-child{margin-bottom:0}
+.prog{font-weight:700;color:var(--sub);font-size:.9rem;white-space:nowrap}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.st{display:grid;grid-template-columns:2.6em 1fr 3.8em;gap:8px;align-items:center;margin:10px 0;font-size:.9rem}
+.st em{font-style:normal;text-align:right;font-weight:700}
+.pb{position:relative;height:18px;background:#efe6da;border-radius:9px;overflow:hidden}.pb i{position:absolute;left:0;top:0;height:100%;border-radius:0 9px 9px 0;transition:width .4s}
+.lg{display:flex;gap:6px;flex-wrap:wrap;font-size:.74rem;margin-top:10px}.lg span{padding:3px 9px;border-radius:9px;color:#1f2a44;font-weight:700}
+.mini{font-size:.78rem;color:var(--sub);margin-top:10px;line-height:1.5}
+select{border:2px solid var(--sk);border-radius:12px;background:#fff;height:40px;padding:0 10px;font-weight:700;font-size:.85rem;max-width:48%}
+.g{display:grid;gap:5px;container-type:inline-size;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+.c{position:relative;aspect-ratio:1;min-width:0;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:600;padding:0;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:.7rem;font-size:calc(100cqw / var(--n) * .42)}
+.v1{background:var(--c1)!important}.v2{background:var(--c2)!important}.v3{background:var(--c3)!important}.v4{background:var(--c4)!important}.vu{background:#D9CCF2!important}
+.ck::after{content:"✓";position:absolute;right:2px;top:0;font-size:.7em;color:#3e7d54}
+.pop{animation:pp .3s}@keyframes pp{50%{transform:scale(1.15)}}
+.sgr{display:flex;gap:10px;margin-bottom:12px}.sgr .b{flex:1}
+.map{display:grid;gap:2px;grid-template-columns:26px repeat(10,minmax(0,1fr));container-type:inline-size}
+.map h4{grid-column:1/-1;margin:12px 0 4px;font-size:.9rem}
+.map i{aspect-ratio:1;min-width:0;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#fff;border:1px solid var(--line);font-style:normal;overflow:hidden;font-size:9px;font-size:calc(100cqw / 11 * .38)}
+.map u,.map s{text-decoration:none}
+.lb{display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:6px;font-size:11px;font-weight:700;min-width:0}
+.ft{display:flex;justify-content:space-between;align-items:center;color:var(--sub);font-size:.78rem;padding:0 4px}
+.dmv{position:fixed;inset:0;z-index:8;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top) + 14px) 14px 40px}.dmi{max-width:480px;margin:0 auto}
+.mo{position:fixed;inset:0;background:#2f3e5c55;z-index:9;display:flex;align-items:center;justify-content:center}
+.md{background:#fff;border-radius:22px;padding:20px;width:min(86%,340px)}.md p{margin:0 0 12px;line-height:1.5}
+.md input,.md textarea{width:100%;border:2px solid var(--sk);border-radius:12px;padding:11px;margin-bottom:10px}
+.md button{display:block;width:100%;border:0;border-radius:12px;height:44px;margin-top:8px;background:var(--sk);font-weight:600}.md button:last-child{background:var(--bg)}
+.sw{display:flex;gap:8px;margin:2px 0 8px}.sw b{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line)}.sw b.on{box-shadow:0 0 0 3px var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:14px;z-index:10;font-size:.9rem;max-width:90%;text-align:center}
+.ub{border:0;background:#fff;color:var(--ink);border-radius:9px;padding:6px 10px;margin-left:8px;font-weight:700}
+.md p,.toast,.bn,.mini,.gr,.inf{word-break:keep-all;overflow-wrap:break-word;text-wrap:balance}
+.c{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.c.sel{box-shadow:inset 0 0 0 3px var(--ink)}.lb[data-bk]{cursor:pointer;text-decoration:underline}
+.map i[data-mi]{cursor:pointer}
+.nw{white-space:nowrap}.nn{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+.tl{flex:none;min-width:4.6em}.tsel{flex:1;min-width:0;max-width:none;text-overflow:ellipsis}
+.tv{position:relative;max-width:260px;margin:6px auto 0}.tv svg{width:100%;height:auto;display:block}
+.stars{position:absolute;right:0;top:6px;max-width:3.4em;font-size:.8rem;line-height:1.15;color:#E3A91B;text-align:right;word-break:break-all}
+.tst{text-align:center;font-size:.92rem;margin-top:2px}
+.tvs{font-size:.74rem;color:var(--sub);line-height:1.6;margin-top:8px;text-align:center;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
+.fin{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:11;background:#fff;color:var(--ink);border:3px solid var(--d2);border-radius:22px;padding:16px 28px;font-size:1.4rem;font-weight:800;box-shadow:0 10px 30px #2f3e5c33;pointer-events:none;animation:fin 2.6s forwards}
+@keyframes fin{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}22%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
+@supports not (font-size:1cqw){.c{font-size:.8rem}.g[style*="--n:10"] .c{font-size:.6rem}.map i{font-size:8px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div id="cover"><img src="cover.jpg?v=3" alt="" onerror="this.remove()"><div class="box"><div id="tr"></div><h1>푸른나무교회<br>성경 통독하기</h1><div id="cvb"></div></div></div>
+<div id="app"><div id="upd">새 버전이 있어요. 눌러서 업데이트</div><div id="ban"></div><div class="stk"><div class="hd" id="hd"></div><div class="tabs" id="tabs"></div></div><div id="main"></div></div>
+<input type="file" id="imp" hidden>
+<script>
+const VER='3.2.0',KEY='bible_v1';
+const B=[];'창세기50,출애굽기40,레위기27,민수기36,신명기34,여호수아24,사사기21,룻기4,사무엘상31,사무엘하24,열왕기상22,열왕기하25,역대상29,역대하36,에스라10,느헤미야13,에스더10,욥기42,시편150,잠언31,전도서12,아가8,이사야66,예레미야52,예레미야애가5,에스겔48,다니엘12,호세아14,요엘3,아모스9,오바댜1,요나4,미가7,나훔3,하박국3,스바냐3,학개2,스가랴14,말라기4,마태복음28,마가복음16,누가복음24,요한복음21,사도행전28,로마서16,고린도전서16,고린도후서13,갈라디아서6,에베소서6,빌립보서4,골로새서4,데살로니가전서5,데살로니가후서3,디모데전서6,디모데후서4,디도서3,빌레몬서1,히브리서13,야고보서5,베드로전서5,베드로후서3,요한일서5,요한이서1,요한삼서1,유다서1,요한계시록22'.replace(/([^\d,]+)(\d+)/g,(m,n,c)=>B.push({n,c:+c}));
+const AB='창,출,레,민,신,수,삿,룻,삼상,삼하,왕상,왕하,대상,대하,스,느,에,욥,시,잠,전,아,사,렘,애,겔,단,호,욜,암,옵,욘,미,나,합,습,학,슥,말,마,막,눅,요,행,롬,고전,고후,갈,엡,빌,골,살전,살후,딤전,딤후,딛,몬,히,약,벧전,벧후,요일,요이,요삼,유,계'.split(',');
+const OT=39,OTC=929,NTC=260,TOT=1189,PAL=['#E4DBF6','#FFD8CC','#C9EEE2','#FFE0B5','#F0D5F2','#D5DEEE'];
+const DK=['','var(--d1)','var(--d2)','var(--d3)','var(--d4)'],CL=['','var(--c1)','var(--c2)','var(--c3)','var(--c4)'],NM=['한 번','두 번','세 번','네 번'],ORD=['','첫','두','세','네','다섯','여섯','일곱','여덟','아홉','열'];
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>{const d=new Date();return (d.getMonth()+1)+'월 '+d.getDate()+'일'};
+const mk=(n,c)=>({id:uid(),name:n,color:c,round:1,start:today(),book:0,base:{},read:{},tree:0,goal:'a',done:0,fin:''});
+const TR=s=>'<svg viewBox="0 0 64 64" width="'+s+'" height="'+s+'" style="vertical-align:middle;flex:none"><circle cx="32" cy="24" r="18" fill="#BFE5C4"/><circle cx="20" cy="33" r="12" fill="#CDEBD0"/><circle cx="44" cy="33" r="12" fill="#B3DEB9"/><rect x="29" y="40" width="6" height="17" rx="3" fill="#E8C9A8"/></svg>';
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{name:'',tables:[],ui:{}};
+S.ui=Object.assign({cols:5,fs:0,tab:0,view:'c',sec:'a',tsec:'a',vw:'g'},S.ui);if(S.ui.cols!=5)S.ui.cols=10;
+S.tables.forEach((t,i)=>{t.base=t.base||{};t.round=t.round||1;t.color=t.color==null?i%6:t.color;t.start=t.start||'';t.book=t.book|0;t.tree=Math.min(9,Math.max(0,t.tree|0));t.goal=/^[ano]$/.test(t.goal)?t.goal:'a';t.done=t.done|0;t.fin=t.fin||''});
+(S.arch||[]).forEach(a=>S.tables.push({id:a.id,name:a.name,color:0,round:1,start:'',book:0,base:{},read:a.read,tree:0,goal:'a',done:0,fin:''}));delete S.arch;
+S.since=S.since||Date.now();if(!S.tables.length)S.tables.push(mk('내 통독표',0));
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const applyFs=()=>document.documentElement.style.setProperty('--fs',[17,21][S.ui.fs]+'px');
+const cnt=(t,b,i)=>((t.base[b]||[])[i]|0)+((t.read[b]||[])[i]|0);
+const pc=(x,t)=>(x/t*100).toFixed(1);
+const hasMark=t=>Object.values(t.read).some(a=>a.some(x=>x));
+function st(f){const r={o:[0,0,0,0],n:[0,0,0,0]};B.forEach((k,b)=>{const a=b<OT?r.o:r.n;for(let i=0;i<k.c;i++){const v=f(b,i);for(let j=0;j<4;j++)if(v>j)a[j]++}});return r}
+const rd=(f,b)=>{let d=0;for(let i=0;i<B[b].c;i++)if(f(b,i)>0)d++;return d};
+const mn=(f,b)=>{let m=1e9;for(let i=0;i<B[b].c;i++)m=Math.min(m,f(b,i));return m};
+const cc=v=>v?' v'+Math.min(v,4):'';
+const snap=()=>JSON.stringify({t:S.tables,tab:S.ui.tab,n:S.name});
+const clr=()=>document.querySelectorAll('.toast').forEach(x=>x.remove());
+function toast(m){clr();const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),3000)}
+function toastU(m,sn){clr();const d=document.createElement('div');d.className='toast';d.innerHTML=esc(m)+'<button class="ub">되돌리기</button>';d.querySelector('button').onclick=()=>{const o=JSON.parse(sn);S.tables=o.t;S.ui.tab=o.tab;if(o.n!=null)S.name=o.n;save();d.remove();render(0);toast('되돌렸어요')};document.body.append(d);setTimeout(()=>d.remove(),2000)}
+function ask(m,bs){return new Promise(r=>{const d=document.createElement('div');d.className='mo';d.innerHTML='<div class="md"><p>'+m+'</p>'+bs.map((b,i)=>'<button data-q="'+i+'">'+b+'</button>').join('')+'</div>';d.onclick=e=>{const i=e.target.dataset.q;if(i!=null){d.remove();r(+i)}};document.body.append(d)})}
+function askIn(m,v,col){return new Promise(r=>{let ci=col;const d=document.createElement('div');d.className='mo';
+ d.innerHTML='<div class="md"><p>'+m+'</p><input id="ai" maxlength="14" value="'+esc(v)+'">'+(col!=null?'<div class="sw">'+PAL.map((c,i)=>'<b data-s="'+i+'" style="background:'+c+'" class="'+(i==col?'on':'')+'"></b>').join('')+'</div>':'')+'<button data-q="0">확인</button><button data-q="1">취소</button></div>';
+ d.onclick=e=>{const s=e.target.dataset.s;if(s!=null){ci=+s;d.querySelectorAll('.sw b').forEach((x,i)=>x.classList.toggle('on',i==ci));return}
+  const q=e.target.dataset.q;if(q!=null){const val=$('#ai').value.trim();d.remove();r(q==0&&val?{v:val,c:ci}:null)}};
+ document.body.append(d);setTimeout(()=>$('#ai').focus(),50)})}
+function bars(r,m){const rows=[['구약',r.o,OTC],['신약',r.n,NTC],['전체',r.o.map((x,j)=>x+r.n[j]),TOT]];
+ const h=rows.map(([n,a,t])=>{const ly=m=='u'?'<i style="width:'+pc(a[0],t)+'%;background:var(--du);z-index:1"></i>':[0,1,2,3].filter(j=>j==0||a[j]>0).map(j=>'<i style="width:'+pc(a[j],t)+'%;background:'+DK[j+1]+';z-index:'+(j+1)+'"></i>').join('');
+  return '<div class="st"><span>'+n+'</span><div class="pb">'+ly+'</div><em>'+pc(a[0],t)+'%</em></div>'}).join('');
+ return h+(m=='u'?'':'<div class="lg">'+NM.map((n,j)=>'<span style="background:'+DK[j+1]+'">'+n+(j==3?' 이상':'')+'</span>').join('')+'</div>')}
+function bsel(f,n){let h='<select id="bs">';B.forEach((k,b)=>{if(b==0)h+='<optgroup label="구약">';if(b==OT)h+='</optgroup><optgroup label="신약">';h+='<option value="'+b+'"'+(b==n?' selected':'')+'>'+k.n+(rd(f,b)==k.c?' ✓':'')+'</option>'});return h+'</optgroup></select>'}
+let pop=-1;
+/* ===== 나무 키우기 ===== */
+const GN={a:'성경 전체',n:'신약만',o:'구약만'},GT={a:TOT,n:NTC,o:OTC},GR={a:[0,B.length],n:[OT,B.length],o:[0,OT]};
+const SG=[['맨땅','0%'],['씨앗','1~9%'],['새싹','10~24%'],['어린 나무','25~39%'],['가지가 뻗는 나무','40~59%'],['나무','60~79%'],['큰 나무','80~99%'],['완성','100%']];
+const TREES=[
+{n:'감람나무',d:'평화와 기름부음의 나무',s:'r',tc:'#8B7355',lc:'#6E9A6A',fk:'o',fr:'#4B3B63',v:'나는 하나님의 집에 있는 푸른 감람나무 같음이여 내가 영원히 하나님의 인자하심을 의지하리로다',r:'시편 52:8'},
+{n:'무화과나무',d:'평안과 달콤한 결실의 나무',s:'r',tc:'#9C7A5B',lc:'#2E9A4E',fk:'f',fr:'#8E4585',v:'각 사람이 자기 포도나무 아래와 자기 무화과나무 아래에 앉을 것이라 그들을 두렵게 할 자가 없으리니 이는 만군의 여호와의 입이 이같이 말씀하셨음이라',r:'미가 4:4'},
+{n:'종려나무',d:'승리와 번성을 뜻하는 늘 푸른 나무',s:'m',tc:'#A98B63',lc:'#1F8F5A',fk:'',fr:'',v:'의인은 종려나무 같이 번성하며 레바논의 백향목 같이 성장하리로다',r:'시편 92:12'},
+{n:'백향목',d:'높고 곧게 자라 성전의 기둥이 되는 나무',s:'p',tc:'#7B5A3C',lc:'#1B5E4B',fk:'',fr:'',v:'레바논의 백향목 같이 뿌리가 박힐 것이라 그 가지는 퍼지며 그의 아름다움은 감람나무와 같고 그의 향기는 레바논의 백향목 같으리니',r:'호세아 14:5-6'},
+{n:'조각목',d:'사막을 견뎌 언약궤가 된 나무',s:'r',tc:'#8A6B45',lc:'#7BA33A',fk:'',fr:'',v:'그들은 조각목으로 궤를 짜되 길이는 두 규빗 반, 너비는 한 규빗 반, 높이는 한 규빗 반이 되게 하고',r:'출애굽기 25:10'},
+{n:'로뎀나무',d:'지친 이에게 그늘이 되는 쉼의 나무',s:'r',tc:'#9A7B55',lc:'#3E7F3D',fk:'',fr:'',v:'로뎀 나무 아래에 누워 자더니 천사가 그를 어루만지며 그에게 이르되 일어나서 먹으라 하는지라',r:'열왕기상 19:5'},
+{n:'살구나무',d:'가장 먼저 봄을 알리는 나무',s:'r',tc:'#8C5E45',lc:'#2F9E6B',fk:'a',fr:'#F6A93B',v:'여호와의 말씀이 내게 임하여 이르시되 예레미야야 네가 무엇을 보느냐 하시기로 내가 대답하되 살구나무 가지를 보나이다',r:'예레미야 1:11'},
+{n:'겨자나무',d:'작은 씨앗에서 크게 자라는 나무',s:'r',tc:'#9A8050',lc:'#4CAF50',fk:'',fr:'',v:'마치 사람이 자기 채소밭에 갖다 심은 겨자씨 한 알과 같으니 자라 나무가 되어 공중의 새들이 그 가지에 깃들였느니라',r:'누가복음 13:19'},
+{n:'포도나무',d:'주님과 하나 되어 열매 맺는 나무',s:'v',tc:'#7A5C3E',lc:'#3E8E41',fk:'g',fr:'#6B3FA0',v:'나는 포도나무요 너희는 가지라 그가 내 안에, 내가 그 안에 거하면 사람이 열매를 많이 맺나니',r:'요한복음 15:5'},
+{n:'에셀나무',d:'사막에서 하나님을 예배한 신실함의 나무',s:'p',tc:'#8A6A4A',lc:'#3F8F8A',fk:'',fr:'',v:'아브라함이 브엘세바에 에셀나무를 심고 거기서 영원하신 하나님 여호와의 이름을 부르니라',r:'창세기 21:33'}];
+const hx=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)),rgb=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join(''),
+ mx=(a,b,t)=>{const A=hx(a),C=hx(b);return rgb(A.map((v,i)=>v+(C[i]-v)*t))},
+ lt=(h,k)=>rgb(hx(h).map(v=>k>=0?v+(255-v)*k:v*(1+k))),
+ cp=x=>Math.max(0,Math.min(1,x)),ss=(a,b,x)=>{const t=cp((x-a)/(b-a));return t*t*(3-2*t)},f1=n=>(+n).toFixed(1);
+const LF='M0 0C6-8 16-8 22 0C16 8 6 8 0 0Z',GL='M0 0C-9-1-14-11-8-15C-6-17-3-16 0-13C3-16 6-17 8-15C14-11 9-1 0 0Z',
+ LC=(T,p)=>mx('#C9EE90',T.lc,cp((p-.08)/.9)),
+ gt=(x,y,a,k,s)=>'<g transform="translate('+f1(x)+' '+f1(y)+') rotate('+a+') scale('+f1(k)+')">'+s+'</g>',
+ ci=(x,y,r,c,o)=>'<circle cx="'+f1(x)+'" cy="'+f1(y)+'" r="'+f1(r)+'" fill="'+c+'"'+(o?' opacity="'+o+'"':'')+'/>',
+ trunk=(c,w,y)=>'<path d="M'+f1(100-w)+' 171L'+f1(100-w*.5)+' '+f1(y)+'H'+f1(100+w*.5)+'L'+f1(100+w)+' 171Z" fill="'+c+'"/>';
+const SOIL='<ellipse cx="100" cy="177" rx="86" ry="10" fill="#EBDCC5"/><ellipse cx="100" cy="172" rx="66" ry="9" fill="#CBA882"/><ellipse cx="100" cy="169" rx="44" ry="5.5" fill="#BB9269"/>',
+ MOUND='<ellipse cx="100" cy="170" rx="20" ry="4.2" fill="#B58C63"/>',
+ PEB='<ellipse cx="70" cy="171" rx="4" ry="2.2" fill="#A98258"/><ellipse cx="132" cy="173" rx="5" ry="2.6" fill="#A98258"/><ellipse cx="112" cy="176" rx="3" ry="1.8" fill="#A98258"/><ellipse cx="86" cy="177" rx="2.6" ry="1.6" fill="#A98258"/>',
+ SPK='<g fill="#F4C430"><text x="36" y="42" font-size="15" text-anchor="middle">✦</text><text x="166" y="60" font-size="12" text-anchor="middle">✦</text><text x="148" y="24" font-size="9" text-anchor="middle">✦</text></g>';
+const FS=[[-.5,.15],[.55,.25],[.05,.62],[-.18,-.35],[.35,-.4],[-.7,.5],[.72,.52],[.08,.1],[-.4,.7],[.45,.72],[-.05,-.72],[.78,0]];
+const HL=[[-.4,-.25],[.35,-.55],[.5,.1],[-.15,.3],[0,-.85],[-.6,.35]];
+function fruit(k,x,y,s,c){s=Math.max(.85,s);const rx=k=='o'?3.4:5.2,ry=k=='o'?4.6:k=='f'?5.8:5.2;
+ return '<ellipse cx="'+f1(x)+'" cy="'+f1(y)+'" rx="'+f1(rx*s)+'" ry="'+f1(ry*s)+'" fill="'+c+'" stroke="'+lt(c,-.28)+'" stroke-width=".8"/>'+ci(x-rx*s*.3,y-ry*s*.35,1.2*s,'#fff',.55)+(k=='f'?'<path d="M'+f1(x)+' '+f1(y-ry*s)+'v-2" stroke="'+lt(c,-.3)+'" stroke-width="1.2"/>':'')}
+function spr(p,y1,th,lc){const sl=1-ss(.26,.38,p);if(sl<.02)return '';const k=.3+.62*ss(.1,.26,p),lf='<path d="'+LF+'" fill="'+lc+'"/>',k2=k*.8*ss(.17,.27,p),y2=y1+th*.35;
+ return '<g opacity="'+f1(sl)+'">'+gt(100,y1,-150,k,lf)+gt(100,y1,-30,k,lf)+(k2>.05?gt(100,y2,-165,k2,lf)+gt(100,y2,-15,k2,lf):'')+gt(100,y1+1,-90,k*.55,lf)+'</g>'}
+function seedT(p){const u=cp(p/.1),g=u*6.5,cy=166,sp=ss(.45,1,u);let h='';
+ if(sp>0){const H=sp*18;h+='<path d="M100 '+cy+'V'+f1(cy-H)+'" stroke="#8CCB63" stroke-width="3" stroke-linecap="round" fill="none"/>';
+  if(u>.78){const k=ss(.78,1,u)*.55,lf='<path d="'+LF+'" fill="#B4E07A"/>';h+=gt(100,cy-H,-150,k,lf)+gt(100,cy-H,-30,k,lf)}}
+ h+='<rect x="'+f1(100-g)+'" y="'+(cy-5.5)+'" width="'+f1(2*g)+'" height="11" fill="#EFE3B0"/>';
+ h+='<path d="M'+f1(100-g)+' '+(cy-6)+'A8 6 0 0 0 '+f1(100-g)+' '+(cy+6)+'Z" fill="#9A6B43"/><path d="M'+f1(100+g)+' '+(cy+6)+'A8 6 0 0 0 '+f1(100+g)+' '+(cy-6)+'Z" fill="#8B5E3C"/>';
+ return h}
+function roundT(T,p,r,tot){
+ const q=(p-.1)/.9,e=cp((p-.8)/.2),lc=LC(T,p),dk=lt(lc,-.13),lh=lt(lc,.2),cs=Math.pow(cp((p-.25)/.55),1.15),R=50*cs*(1+.14*e),
+  th=16+62*Math.pow(q,.8),tw=2.4+8*q,y1=170-th,ct=y1-.12*R,tc=mx('#86C568',T.tc,ss(.12,.4,p));
+ let h=trunk(tc,tw,y1)+spr(p,y1,th,lc);
+ const bs=ss(.36,.6,p);
+ if(bs>.02){[[14,-1,46,26],[14,1,46,26],[34,-1,34,12],[34,1,34,12]].forEach(([dy,s,dx,rise])=>{
+  const sy=y1+dy,tx=100+s*dx*bs,ty=sy-rise*bs;
+  h+='<path d="M100 '+f1(sy)+'Q'+f1(100+s*dx*bs*.5)+' '+f1(sy-rise*bs*.1)+' '+f1(tx)+' '+f1(ty)+'" stroke="'+tc+'" stroke-width="'+f1(2.2+1.6*bs)+'" stroke-linecap="round" fill="none"/>'
+   +ci(tx,ty,3.5+4.5*bs,lc)+ci(tx+s*4,ty-3,3+3.5*bs,dk)+ci(tx-s*3,ty-4,3+2.5*bs,lh)})}
+ if(R>2.5){h+=ci(100-.62*R,ct+.26*R,.68*R,dk)+ci(100+.62*R,ct+.26*R,.68*R,lt(lc,-.06))+ci(100,ct,.95*R,lc)+ci(100,ct-.5*R,.62*R,lh);
+  if(!T.fk&&e>0){const n=Math.ceil(e*6);for(let i=0;i<n;i++)h+=ci(100+HL[i][0]*R,ct+HL[i][1]*R,.11*R,lt(lc,.38),.85)}
+  if(T.fk){const nF=r>=tot?12:p<.8?0:Math.min(11,1+Math.floor((p-.8)/.2*11));for(let i=0;i<nF;i++)h+=fruit(T.fk,100+FS[i][0]*R,ct+FS[i][1]*R,R/50,T.fr)}}
+ return h}
+function coneT(T,p){
+ const q=(p-.1)/.9,e=cp((p-.8)/.2),lc=LC(T,p),cs=Math.pow(cp((p-.25)/.55),1.1),tht=16+26*q,y1=170-tht,tw=2.4+7*q,tc=mx('#86C568',T.tc,ss(.12,.4,p)),
+  yb=y1+12,Hc=(2+94*cs)*(1+.1*e),Wc=(6+38*cs)*(1+.1*e),top=yb-Hc;
+ let h=trunk(tc,tw,y1)+spr(p,y1,tht,lc);
+ if(cs>.01){for(let i=3;i>=0;i--){const s=ss(i*.17,i*.17+.35,cs);if(s<.02)continue;const hw=Wc*(.42+.2*i)*s,ay=top+i*.2*Hc,by=top+(.4+.2*i)*Hc;
+  h+='<path d="M100 '+f1(ay)+'L'+f1(100+hw)+' '+f1(by)+'Q100 '+f1(by-hw*.2)+' '+f1(100-hw)+' '+f1(by)+'Z" fill="'+lt(lc,.12-i*.07)+'"/>'}
+  if(e>0){const n=Math.ceil(e*6),C=[[-.25,.62],[.3,.7],[0,.38],[-.35,.88],[.38,.9],[.05,.15]];for(let i=0;i<n;i++)h+=ci(100+C[i][0]*Wc,top+C[i][1]*Hc,2.2+e*1.5,lt(lc,.4),.8)}}
+ return h}
+function palmT(T,p){
+ const q=cp((p-.1)/.9),e=cp((p-.8)/.2),lc=LC(T,p),dk=lt(lc,-.14),th=18+88*Math.pow(q,.9),y1=170-th,xt=100+10*q,tw=3.4+5*q,tc=mx('#86C568',T.tc,ss(.12,.4,p));
+ let h='<path d="M100 171Q'+f1(100-8*q)+' '+f1(170-th*.5)+' '+f1(xt)+' '+f1(y1)+'" stroke="'+tc+'" stroke-width="'+f1(tw)+'" stroke-linecap="round" fill="none"/>';
+ if(q>.3){for(let y=164;y>y1+8;y-=9){const t=(170-y)/th,x=(1-t)*(1-t)*100+2*(1-t)*t*(100-8*q)+t*t*xt;h+='<path d="M'+f1(x-tw*.45)+' '+f1(y)+'L'+f1(x+tw*.45)+' '+f1(y+1.5)+'" stroke="'+lt(tc,-.22)+'" stroke-width="1"/>'}}
+ [-62,62,-30,30,-86,86,0,-46,46,-74,74].forEach((A,i)=>{
+  const f=ss(.1+.075*i,.32+.075*i,p),L=(12+42*Math.pow(q,.85))*f*(1+.18*e);if(L<2)return;
+  const a=A*Math.PI/180,tx=xt+Math.sin(a)*L,ty=y1-Math.cos(a)*L+L*.3*Math.abs(Math.sin(a)),cx=tx-xt,cy=ty-y1,len=Math.hypot(cx,cy),nx=-cy/len,ny=cx/len,mxp=xt+cx*.5,myp=y1+cy*.5-L*.14,w=L*(.17+.03*e);
+  h+='<path d="M'+f1(xt)+' '+f1(y1)+'Q'+f1(mxp+nx*w)+' '+f1(myp+ny*w)+' '+f1(tx)+' '+f1(ty)+'Q'+f1(mxp-nx*w)+' '+f1(myp-ny*w)+' '+f1(xt)+' '+f1(y1)+'Z" fill="'+(i%2?lc:dk)+'"/><path d="M'+f1(xt)+' '+f1(y1)+'Q'+f1(mxp)+' '+f1(myp)+' '+f1(tx)+' '+f1(ty)+'" stroke="'+lt(dk,-.2)+'" stroke-width=".8" fill="none"/>'});
+ return h+ci(xt,y1,3,lt(tc,-.25))}
+function bunch(x,y,c){let h='<path d="M'+f1(x)+' '+f1(y)+'v7" stroke="#7A5C3E" stroke-width="1.6"/>';
+ [[-6,11],[0,11],[6,11],[-3,17],[3,17],[0,23]].forEach(([dx,dy])=>{h+='<circle cx="'+f1(x+dx)+'" cy="'+f1(y+dy)+'" r="3.8" fill="'+c+'" stroke="'+lt(c,-.3)+'" stroke-width=".6"/>'+ci(x+dx-1,y+dy-1.2,1,'#fff',.5)});return h}
+function vineT(T,p,r,tot){
+ const q=cp((p-.1)/.9),lc=LC(T,p),dk=lt(lc,-.14),tc=mx('#86C568',T.tc,ss(.12,.4,p));let h='';
+ const tr=ss(.2,.45,p);if(tr>.02)h+='<g opacity="'+f1(tr)+'" stroke="#CDAE82" stroke-width="4.5" stroke-linecap="round" fill="none"><path d="M52 171V46M148 171V46M44 46H156"/></g>';
+ const Hv=14+110*Math.pow(q,.85),pts=[];for(let d=0;d<=Hv;d+=4)pts.push(f1(100+8*Math.sin(d/10))+' '+f1(170-d));
+ h+='<path d="M'+pts.join('L')+'" stroke="'+tc+'" stroke-width="'+f1(2.6+2.2*q)+'" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+ for(let d=12,j=0;d<=Hv-2;d+=15,j++){const s=j%2?1:-1,x=100+8*Math.sin(d/10)+s*2.5,y=170-d;h+=gt(x,y,s*58,.62+.5*cp((Hv-d)/45),'<path d="'+GL+'" fill="'+(j%2?lc:dk)+'"/>')}
+ const aq=cp((q-.55)/.45),La=52*aq;
+ if(La>2){[-1,1].forEach(s=>{const ap=[];for(let u=0;u<=La;u+=4)ap.push(f1(100+s*u)+' '+f1(46+2.2*Math.sin(u/6)));
+  h+='<path d="M'+ap.join('L')+'" stroke="'+tc+'" stroke-width="2.8" stroke-linecap="round" fill="none"/>';
+  for(let u=9,m=0;u<=La;u+=12,m++)h+=gt(100+s*u,46+2.2*Math.sin(u/6),m%2?180-s*12:s*12,.85,'<path d="'+GL+'" fill="'+(m%2?lc:dk)+'"/>')})}
+ const nC=r>=tot?8:p<.8?0:Math.min(7,1+Math.floor((p-.8)/.2*7));
+ [-14,14,-26,26,-38,38,-48,48].forEach((o,k)=>{if(k<nC&&Math.abs(o)<=La+2)h+=bunch(100+o,46+2.2*Math.sin(Math.abs(o)/6),T.fr)});
+ return h}
+function treeSvg(T,p,r,tot){let g=SOIL;
+ if(!r)g+=PEB;else if(p<.1)g+=seedT(p);else g+=(T.s=='r'?roundT:T.s=='p'?coneT:T.s=='m'?palmT:vineT)(T,p,r,tot);
+ return '<svg viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+T.n+'">'+g+MOUND+(r>=tot?SPK:'')+'</svg>'}
+function prog(t){const [a,b]=GR[t.goal];let r=0;for(let k=a;k<b;k++){const x=t.read[k];if(x)for(let i=0;i<x.length;i++)if(x[i])r++}return r}
+function treeHtml(t){const T=TREES[t.tree],tot=GT[t.goal],r=prog(t),p=r>=tot?1:r/tot,
+  si=!r?0:r>=tot?7:p<.1?1:p<.25?2:p<.4?3:p<.6?4:p<.8?5:6,pct=r>=tot?100:r?Math.max(1,Math.floor(p*100)):0,
+  stars=t.done>0?'<div class="stars" title="이전에 완성한 횟수">'+(t.done<=8?'★'.repeat(t.done):'★×'+t.done)+'</div>':'';
+ return '<div class="card" style="border:2px solid '+PAL[t.color]+'"><div class="trow"><span class="inf tl">나무</span><select class="tsel" id="ts">'
+  +TREES.map((x,i)=>'<option value="'+i+'"'+(i==t.tree?' selected':'')+'>'+x.n+' ('+x.d+')</option>').join('')+'</select></div>'
+  +'<div class="trow"><span class="inf tl">나의 목표</span><select class="tsel" id="tg">'
+  +Object.keys(GN).map(k=>'<option value="'+k+'"'+(k==t.goal?' selected':'')+'>'+GN[k]+'</option>').join('')+'</select></div>'
+  +'<div class="tv">'+treeSvg(T,p,r,tot)+stars+'</div><div class="tst"><b>'+SG[si][0]+'</b> · '+SG[si][1]+'</div>'
+  +'<div class="mini" style="text-align:center;margin-top:4px">읽은 장 '+r+' / '+tot+'장 · '+pct+'%</div>'
+  +'<div class="tvs">“'+esc(T.v)+'” ('+esc(T.r)+')</div></div>'}
+function showFin(){document.querySelectorAll('.fin').forEach(x=>x.remove());const d=document.createElement('div');d.className='fin';d.textContent='완성했어요!';document.body.append(d);setTimeout(()=>d.remove(),2700)}
+function chk(t){if(prog(t)>=GT[t.goal]&&t.fin!==t.goal){t.fin=t.goal;save();showFin()}}
+
+const foot=()=>'<div class="ft"><a data-act="dm">데이터 관리</a><span>버전 '+VER+'</span></div>';
+function tbHtml(t){const f=(b,i)=>cnt(t,b,i),n=t.book,a=t.read[n]||[],cl=PAL[t.color],N=S.ui.cols,seg='<div class="sgr">'+[['5','5열'],['10','10열'],['m','전체']].map(x=>'<button class="b'+((S.ui.vw=='m'?'m':N)==x[0]?' on':'')+'" data-act="vw" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>';
+ const cells=Array.from({length:B[n].c},(_,i)=>'<button class="c'+cc(f(n,i))+(a[i]&&t.round>1?' ck':'')+(pop==i?' pop':'')+'" data-i="'+i+'">'+(i+1)+'</button>').join('');
+ return '<div class="card" style="background:'+cl+'55;border:2px solid '+cl+'"><div class="trow"><span class="inf">'+ORD[Math.min(t.round,10)]+' 번째 읽는 중'+(t.start?' · '+t.start+' 시작':'')+'</span></div>'+bars(st(f),'c')+'</div>'
+ +'<div class="card" style="border:2px solid '+cl+'">'+seg+(S.ui.vw=='m'?secBtns(S.ui.tsec,'tsec')+mapHtml(f,S.ui.tsec,0,1)+'<div class="mini">칸을 누르면 읽은 곳을 표시하거나 지울 수 있어요. 책 이름을 누르면 그 책의 칸 표로 이동해요.</div>':'<div class="trow">'+bsel(f,n)+'<span class="prog">'+rd(f,n)+' / '+B[n].c+'장</span></div><div class="g" style="--n:'+N+'">'+cells+'</div><div class="mini">칸을 약 1초 길게 누른 채 밀면, 처음 누른 칸부터 손을 뗀 칸까지 한꺼번에 표시돼요. 읽은 칸에서 시작하면 한꺼번에 지워져요.</div>')+'</div>'
+ +'<div class="acts"><button class="b" data-act="new">새로 읽기</button>'+(t.round>1?'<button class="b" data-act="keep">이번 회차만 남기기</button>':'')+'<button class="b" data-act="del">이 통독표 삭제</button></div>'+treeHtml(t)+foot()}
+const secBtns=(cur,act)=>'<div class="sgr">'+[['a','전체'],['n','신약만'],['o','구약만']].map(x=>'<button class="b'+(cur==x[0]?' on':'')+'" data-act="'+act+'" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>';
+function mapHtml(f,sec,un,link){let h='<div class="map">';
+ B.forEach((k,b)=>{if(sec=='n'&&b<OT||sec=='o'&&b>=OT)return;if(b==0)h+='<h4>구약 39권 929장</h4>';if(b==OT)h+='<h4>신약 27권 260장</h4>';
+  const m=mn(f,b),lc=un?(m>0?' vu':''):cc(m);
+  for(let s=0;s<k.c;s+=10){h+=s?'<s></s>':'<div class="lb'+lc+'"'+(link?' data-bk="'+b+'"':'')+'>'+AB[b]+'</div>';
+   for(let i=s;i<s+10;i++){if(i<k.c){const v=f(b,i);h+='<i class="'+(un?(v?'vu':''):cc(v).trim())+'"'+(link?' data-mb="'+b+'" data-mi="'+i+'"':'')+'>'+(i+1)+'</i>'}else h+='<u></u>'}}});
+ return h+'</div>'}
+function ovHtml(){const u=S.ui,un=u.view=='u',f=(b,i)=>S.tables.reduce((s,t)=>s+cnt(t,b,i),0),r=st(f);let full=1e9;B.forEach((k,b)=>{full=Math.min(full,mn(f,b))});
+ let h='<div class="card"><div class="trow"><span class="inf">완독 '+full+'회</span><span style="flex:1"></span><button class="b'+(un?' on':'')+'" data-act="view">중복제거 보기</button></div>'+bars(r,un?'u':'c')+'<div class="mini">합산한 통독표: '+S.tables.map(x=>esc(x.name)).join(', ')+'</div></div>';
+ h+='<div class="card">'+secBtns(u.sec,'sec')+mapHtml(f,u.sec,un,0)+'</div>';return h+foot()}
+function banners(){const ua=navigator.userAgent,ios=/iPhone|iPad/.test(ua);let h='';
+ if(/KAKAOTALK/i.test(ua))h+='<div class="bn">카카오톡 안에서 열렸어요. 여기서 쓴 기록은 다른 브라우저에서 보이지 않아요. 아래 단추를 눌러 사파리나 크롬으로 열어 주세요.<br><button class="b" data-act="kk">다른 브라우저로 열기</button><button class="b" data-act="cu">주소 복사</button><br>안 되면 '+(ios?'오른쪽 아래':'오른쪽 위')+' 메뉴의 「다른 브라우저로 열기」를 눌러 주세요.</div>';
+ else if(!S.hint&&!(matchMedia('(display-mode: standalone)').matches||navigator.standalone))h+='<div class="bn" data-act="hint">'+(ios?'아이폰: 사파리 아래 공유 버튼 → 「홈 화면에 추가」. 꼭 홈 화면의 아이콘으로 시작하세요.':'갤럭시: 메뉴(⋮) → 「홈 화면에 추가」 또는 「앱 설치」를 눌러 주세요.')+'<br><b>눌러서 닫기</b></div>';
+ if(Date.now()-(S.lastT||S.since)>30*864e5)h+='<div class="bn" data-act="dm">백업한 지 한 달이 지났어요. 눌러서 「데이터 관리」에서 백업해 두세요.</div>';
+ if(!S.tip&&S.ui.tab>=0)h+='<div class="bn" data-act="tip">읽은 장의 번호를 눌러 표시하세요. 다시 누르면 지워져요. 번호를 약 1초 길게 누른 채 밀면 처음 누른 칸부터 손을 뗀 칸까지 한꺼번에 표시돼요. 또 읽고 싶으면 「새로 읽기」를 눌러요.<br><b>눌러서 닫기</b></div>';
+ return h}
+function render(y){const u=S.ui;if(u.tab>=S.tables.length)u.tab=0;const ov=u.tab<0,t=ov?null:S.tables[u.tab];applyFs();
+ $('#hd').innerHTML='<h2 id="tt">'+TR(22)+'<span>'+esc(S.name)+'의 성경읽기 ✎</span></h2><button class="b fx'+(ov?' on':'')+'" data-act="all">나의 통독 현황</button>';
+ $('#tabs').innerHTML=S.tables.map((x,i)=>{const on=!ov&&u.tab==i;return '<button class="b tab'+(on?' on':'')+'" style="background:'+PAL[x.color]+'" data-t="'+i+'">'+esc(x.name)+(on?' ✎':'')+'</button>'}).join('')+'<button class="b tab pl" data-act="add">＋ 새 통독표</button>';
+ $('#main').innerHTML=ov?ovHtml():tbHtml(t);$('#ban').innerHTML=banners();pop=-1;if(y!=null)scrollTo(0,y)}
+const refresh=()=>{if($('#app').style.display=='block')render(0);else showCover()};
+const gr=()=>{const h=new Date().getHours();return h<12?'좋은 아침이에요':h<18?'좋은 오후예요':'편안한 저녁이에요'};
+function showCover(){applyFs();$('#tr').innerHTML=TR(64);$('#cvb').innerHTML=(S.name?'<p class="gr">'+gr()+', '+esc(S.name)+'님.<br>오늘도 시작해볼까요?</p><button class="go" id="go">시작하기</button><div class="lks"><a id="chg">이름 바꾸기</a><a id="dm">데이터 관리</a></div>':'<p class="gr">이름을 적고 시작을 눌러 주세요</p><input id="nm" maxlength="12" placeholder="이름 입력" autocomplete="off"><button class="go" id="go">시작하기</button><div class="lks"><a id="dm">데이터 관리</a></div>')+'<div class="mini" style="text-align:center">버전 '+VER+'</div>';
+ const n=$('#nm');if(n)n.onkeydown=e=>{if(e.key=='Enter')go()}}
+function go(){if(!S.name){const n=$('#nm'),v=n.value.trim();if(!v){n.focus();n.classList.add('shake');setTimeout(()=>n.classList.remove('shake'),450);toast('이름을 먼저 적어 주세요');return}S.name=v;save()}
+ $('#cover').style.display='none';$('#app').style.display='block';render(0)}
+$('#cover').onclick=async e=>{const id=e.target.id;if(id=='go')go();else if(id=='dm')showDM();else if(id=='chg'){const r=await askIn('이름을 고쳐 주세요',S.name);if(r){S.name=r.v;save();showCover()}}};
+$('#hd').onclick=async e=>{if(!e.target.closest('#tt'))return;const r=await askIn('이름을 고쳐 주세요',S.name);if(r){S.name=r.v;save();render()}};
+$('#upd').onclick=()=>location.reload();
+document.addEventListener('change',e=>{const id=e.target.id;if(id=='bs'){S.tables[S.ui.tab].book=+e.target.value;save();render();focusFirst()}
+ else if(id=='ts'||id=='tg'){const t=S.tables[S.ui.tab];if(!t)return;if(id=='ts')t.tree=+e.target.value;else t.goal=e.target.value;save();render(scrollY)}});
+function showDM(){const d=document.createElement('div');d.className='dmv';
+ d.innerHTML='<div class="dmi"><div class="trow"><b>데이터 관리</b><span style="flex:1"></span><button class="b" data-d="x">닫기</button></div><div class="inf">글자 크기</div><div class="sgr" style="margin-top:10px">'+['보통','크게'].map((x,i)=>'<button class="b'+(S.ui.fs==i?' on':'')+'" data-d="f'+i+'">'+x+'</button>').join('')+'</div>'
+ +'<div class="inf" style="margin-top:18px">백업과 이동</div><button class="b w" data-d="exp">내보내기 (파일로 공유)</button><button class="b w" data-d="cpy">복사하기 (글자로)</button><button class="b w" data-d="imp">불러오기</button><div class="mini">마지막 백업: '+(S.last||'아직 없음')+'</div><div class="mini">폰을 바꿀 때: 옛 폰에서 「복사하기」 → 카톡 나에게 보내기. 새 폰에서 그 글자를 복사한 뒤 「불러오기」 → 글자 붙여넣기.</div>'
+ +'<button class="b w" style="margin-top:18px" data-d="chk">새 버전 확인</button><div class="mini" style="text-align:center">버전 '+VER+'</div></div>';
+ d.onclick=async e=>{const k=e.target.closest('[data-d]');if(!k)return;const a=k.dataset.d;
+  if(a=='x'){d.remove();refresh()}
+  else if(a[0]=='f'){S.ui.fs=+a[1];save();applyFs();d.querySelectorAll('[data-d^=f]').forEach(x=>x.classList.toggle('on',x.dataset.d==a))}
+  else if(a=='exp'){await exp();d.remove();showDM()}
+  else if(a=='cpy'){await cpy();d.remove();showDM()}
+  else if(a=='imp')impAsk();
+  else if(a=='chk'){toast('확인 중이에요…');try{await fetch('./')}catch(x){toast('인터넷에 연결되어 있지 않아요');return}setTimeout(()=>location.reload(),1800)}};
+ document.body.append(d)}
+document.addEventListener('click',async e=>{
+ const el=e.target.closest('[data-act],[data-i],[data-t],[data-bk],[data-mi]');if(!el||el.closest('.mo')||$('#app').style.display!='block')return;
+ const D=el.dataset,u=S.ui,y=scrollY,ov=u.tab<0,t=S.tables[u.tab];
+ if(D.mi!=null){const b=+D.mb,i=+D.mi,a=t.read[b]||(t.read[b]=Array(B[b].c).fill(0)),sn=snap();a[i]=a[i]?0:1;save();render(y);toastU(B[b].n+' '+(i+1)+'장을 '+(a[i]?'읽음으로 표시했어요':'읽음 표시를 지웠어요'),sn);chk(t);return}
+ if(D.i!=null){const a=t.read[t.book]||(t.read[t.book]=Array(B[t.book].c).fill(0)),i=+D.i;a[i]=a[i]?0:1;pop=a[i]?i:-1;save();render(y);if(a[i]&&a.every(x=>x))toast(B[t.book].n+' 읽기를 마쳤어요. 축하해요!');chk(t);return}
+ if(D.bk!=null){t.book=+D.bk;u.vw='g';save();render(0);focusFirst();return}
+ if(D.t!=null){if(+D.t==u.tab){const r=await askIn('통독표 이름과 색을 골라 주세요',t.name,t.color);if(r){t.name=r.v;t.color=r.c;save();render(y)}}else{u.tab=+D.t;save();render(0);focusFirst()}return}
+ switch(D.act){
+  case 'vw':clr();if(D.v=='m')u.vw=u.vw=='m'?'g':'m';else{u.vw='g';u.cols=+D.v}save();render(y);break;
+  case 'tsec':clr();u.tsec=D.v;save();render(y);break;
+  case 'all':u.tab=-1;save();render(0);break;
+  case 'view':clr();u.view=u.view=='u'?'c':'u';save();render(y);break;
+  case 'sec':clr();u.sec=D.v;save();render(y);break;
+  case 'hint':S.hint=1;save();render(y);break;
+  case 'tip':S.tip=1;save();render(y);break;
+  case 'dm':showDM();break;
+  case 'kk':location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(location.href);break;
+  case 'cu':try{await navigator.clipboard.writeText(location.href);toast('주소를 복사했어요. 사파리나 크롬 주소창에 붙여넣어 주세요')}catch(x){toast('복사하지 못했어요')}break;
+  case 'add':{const r=await askIn('새 통독표 이름을 적어 주세요','새 통독표',S.tables.length%6);if(r){S.tables.push(mk(r.v,r.c));u.tab=S.tables.length-1;save();render(0)}break}
+  case 'new':{if(!hasMark(t)){toast('새로 읽을 체크가 아직 없어요');break}
+   if(await ask('지금까지 화면에 체크한 기록을 삭제할까요?',['확인','취소'])!=0)break;
+   const q=await ask('이 통독표에서 읽은 기록은 남길까요?',['남기기','남기지 않기','취소']);if(q==2)break;
+   if(q==1&&await ask('읽은 기록을 모두 완전히 삭제하겠습니다.',['확인','취소'])!=0)break;
+   const sn=snap();if(prog(t)>=GT[t.goal])t.done=(t.done|0)+1;t.fin='';
+   if(q==0){Object.keys(t.read).forEach(b=>{const a=t.base[b]||(t.base[b]=Array(B[b].c).fill(0));t.read[b].forEach((v,i)=>{a[i]=Math.min(9,a[i]+v)})});t.read={};t.round++}
+   else{t.read={};t.base={};t.round=1}
+   t.start=today();save();render(0);toastU(q==0?'기록을 남기고 새로 시작했어요':'처음부터 새로 시작했어요',sn);break}
+  case 'keep':if(await ask('이전에 읽은 기록은 지우고, 이번에 체크한 칸만 남길까요?<br>이번에 읽은 칸은 노랑으로, 나머지는 흰색으로 바뀌고 첫 번째 읽기로 돌아가요.',['확인','취소'])==0){const sn=snap();t.base={};t.round=1;save();render(y);toastU('이번 회차만 남겼어요',sn)}break;
+  case 'del':{if(await ask('<span class="nw">지금 읽고 계신</span> <span class="nn">「'+esc(t.name)+'」</span> <span class="nw">통독표가 사라져요.</span><br><span class="nw">그래도 삭제하시겠어요?</span>',['삭제하기','취소'])!=0)break;
+   if(await ask('<span class="nw">읽은 기록을 모두</span> <span class="nw">완전히 삭제하겠습니다.</span><br><span class="nw">나의 통독 현황에서도</span> <span class="nw">줄어들어요.</span>',['확인','취소'])!=0)break;
+   const sn=snap();S.tables.splice(u.tab,1);if(!S.tables.length)S.tables.push(mk('내 통독표',0));u.tab=0;save();render(0);toastU('삭제했어요',sn);break}}});
+const ps=a=>a.join(''),us=s=>typeof s=='string'?s.split('').map(Number):s,mp=(o,f)=>Object.fromEntries(Object.entries(o||{}).map(([b,a])=>[b,f(a)]));
+const pt=t=>({id:t.id,name:t.name,color:t.color,round:t.round,start:t.start,book:t.book,tree:t.tree,goal:t.goal,done:t.done,fin:t.fin,read:mp(t.read,ps),base:mp(t.base,ps)});
+const ut=t=>({id:t.id||uid(),name:t.name||'통독표',color:t.color|0,round:t.round||1,start:t.start||'',book:t.book|0,tree:Math.min(9,Math.max(0,t.tree|0)),goal:/^[ano]$/.test(t.goal)?t.goal:'a',done:t.done|0,fin:t.fin||'',read:mp(t.read,us),base:mp(t.base,us)});
+const pack=()=>JSON.stringify({app:'bible',v:3,data:{name:S.name,tables:S.tables.map(pt)}});
+const stamp=()=>{S.last=new Date().toLocaleDateString('ko-KR');S.lastT=Date.now();save()};
+async function exp(){const d=new Date(),p=n=>String(n).padStart(2,'0'),fn='성경통독백업_'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'.json';
+ const file=new File([pack()],fn,{type:'application/json'});
+ if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});stamp();return}catch(e){if(e.name=='AbortError')return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=fn;a.click();stamp()}
+async function cpy(){const t='BIBLE1:'+btoa(unescape(encodeURIComponent(pack())));
+ try{await navigator.clipboard.writeText(t)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.append(x);x.select();document.execCommand('copy');x.remove()}
+ stamp();toast('복사했어요. 카톡 나에게 보내기에 붙여넣으세요')}
+function parse(s){s=String(s).trim();const i=s.indexOf('BIBLE1:');return JSON.parse(i>=0?decodeURIComponent(escape(atob(s.slice(i+7).replace(/\s/g,'')))):s)}
+function askText(){return new Promise(r=>{const d=document.createElement('div');d.className='mo';d.innerHTML='<div class="md"><p>복사해 둔 백업 글자를 붙여넣어 주세요.</p><textarea id="pt" rows="5" style="font-size:.8rem"></textarea><button data-q="0">불러오기</button><button data-q="1">취소</button></div>';d.onclick=e=>{const i=e.target.dataset.q;if(i!=null){const v=$('#pt').value;d.remove();r(i==0?v:null)}};document.body.append(d)})}
+async function impAsk(){const q=await ask('어떻게 불러올까요?',['글자 붙여넣기 (쉬워요)','파일 선택','취소']);if(q==1)$('#imp').click();else if(q==0){const v=await askText();if(v){try{await apply(parse(v).data)}catch(x){toast('붙여넣은 글자가 올바르지 않아요')}}}}
+async function apply(d){if(!d||!Array.isArray(d.tables))throw 0;const T=d.tables.map(ut);
+ const c=await ask('백업에 통독표가 '+T.length+'개 있어요.',['합치기 (지금 기록 유지)','덮어쓰기 (지금 기록 삭제)','취소']);if(c==2)return;
+ if(c==1&&await ask('지금 기록이 모두 사라지고 백업 내용으로 바뀌어요.<br>정말 덮어쓸까요?',['덮어쓰기','취소'])!=0)return;
+ const sn=snap();
+ if(c==1){S.tables=T;S.name=d.name||S.name}
+ else{T.forEach(t=>{const m=S.tables.find(x=>x.id==t.id);if(!m)S.tables.push(t);else{Object.keys(t.read).forEach(b=>{const a=m.read[b]||(m.read[b]=Array(B[b].c).fill(0));t.read[b].forEach((v,i)=>{if(v)a[i]=1})});Object.keys(t.base).forEach(b=>{const a=m.base[b]||(m.base[b]=Array(B[b].c).fill(0));t.base[b].forEach((v,i)=>{a[i]=Math.max(a[i],v)})});m.round=Math.max(m.round,t.round);m.done=Math.max(m.done|0,t.done|0)}});if(!S.name)S.name=d.name||''}
+ if(!S.tables.length)S.tables.push(mk('내 통독표',0));S.ui.tab=0;save();document.querySelectorAll('.dmv').forEach(x=>x.remove());refresh();toastU(c==1?'덮어썼어요':'불러왔어요',sn)}
+$('#imp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await apply(parse(await f.text()).data)}catch(x){toast('올바른 백업 파일이 아니에요')}e.target.value=''};
+function focusFirst(){const t=S.tables[S.ui.tab];if(!t||S.ui.vw=='m')return;const a=t.read[t.book]||[],n=B[t.book].c;let i=0;while(i<n&&a[i])i++;if(i>=n||i<S.ui.cols)return;const c=document.querySelector('.g .c[data-i="'+i+'"]');if(c)c.scrollIntoView({block:'center'})}
+let LP=null;
+function mark(){if(!LP)return;const lo=Math.min(LP.i0,LP.i1),hi=Math.max(LP.i0,LP.i1);LP.g.querySelectorAll('.c').forEach(c=>{const i=+c.dataset.i;c.classList.toggle('sel',i>=lo&&i<=hi)})}
+function endLP(){if(LP){clearTimeout(LP.tm);LP.g.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));LP=null}}
+document.addEventListener('touchstart',e=>{const c=e.target.closest('.g .c');if(!c||e.touches.length>1||S.ui.tab<0)return;const p=e.touches[0],i=+c.dataset.i;
+ LP={g:c.parentNode,x:p.clientX,y:p.clientY,i0:i,i1:i,on:0,mv:0};
+ LP.tm=setTimeout(()=>{if(!LP)return;LP.on=1;if(navigator.vibrate)navigator.vibrate(30);mark()},1000)},{passive:true});
+document.addEventListener('touchmove',e=>{if(!LP)return;const p=e.touches[0];
+ if(!LP.on){if(Math.hypot(p.clientX-LP.x,p.clientY-LP.y)>10){clearTimeout(LP.tm);LP=null}return}
+ e.preventDefault();const el=document.elementFromPoint(p.clientX,p.clientY),c=el&&el.closest('.g .c');
+ if(c&&c.parentNode===LP.g){LP.i1=+c.dataset.i;if(LP.i1!=LP.i0)LP.mv=1;mark()}},{passive:false});
+document.addEventListener('touchend',e=>{if(!LP)return;clearTimeout(LP.tm);const L=LP;if(!L.on){LP=null;return}
+ e.preventDefault();if(!L.mv){endLP();return}
+ const t=S.tables[S.ui.tab],bk=t.book,n=B[bk].c,lo=Math.min(L.i0,L.i1),hi=Math.min(n-1,Math.max(L.i0,L.i1)),a=t.read[bk]||(t.read[bk]=Array(n).fill(0));
+ const on=a[L.i0]?0:1,sn=snap(),y=scrollY;for(let i=lo;i<=hi;i++)a[i]=on;
+ LP=null;save();render(y);toastU((hi-lo+1)+(on?'칸을 읽음으로 표시했어요':'칸의 표시를 지웠어요'),sn);chk(t)},{passive:false});
+document.addEventListener('touchcancel',endLP);
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.g'))e.preventDefault()});
+if('serviceWorker'in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!window.__rl){window.__rl=1;location.reload()}});navigator.serviceWorker.addEventListener('message',e=>{if(e.data=='update')$('#upd').style.display='block'})}
+showCover();
+</script></body></html>
