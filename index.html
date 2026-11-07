@@ -330,7 +330,7 @@ function mark(){if(!LP)return;const lo=Math.min(LP.i0,LP.i1),hi=Math.max(LP.i0,L
 function endLP(){if(LP){clearTimeout(LP.tm);LP.g.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));LP=null}}
 document.addEventListener('touchstart',e=>{const c=e.target.closest('.g .c');if(!c||e.touches.length>1||S.ui.tab<0)return;const p=e.touches[0],i=+c.dataset.i;
  LP={g:c.parentNode,x:p.clientX,y:p.clientY,i0:i,i1:i,on:0,mv:0};
- LP.tm=setTimeout(()=>{if(!LP)return;LP.on=1;if(navigator.vibrate)navigator.vibrate(30);mark()},1000)},{passive:true});
+ LP.tm=setTimeout(()=>{if(!LP)return;LP.on=1;if(navigator.vibrate)navigator.vibrate(30);mark()},600)},{passive:true});
 document.addEventListener('touchmove',e=>{if(!LP)return;const p=e.touches[0];
  if(!LP.on){if(Math.hypot(p.clientX-LP.x,p.clientY-LP.y)>10){clearTimeout(LP.tm);LP=null}return}
  e.preventDefault();const el=document.elementFromPoint(p.clientX,p.clientY),c=el&&el.closest('.g .c');
