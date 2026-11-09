@@ -78,6 +78,18 @@ select{border:2px solid var(--sk);border-radius:12px;background:#fff;height:40px
 <div id="cover"><img src="cover.jpg?v=3" alt="" onerror="this.remove()"><div class="box"><div id="tr"></div><h1>푸른나무교회<br>성경 통독하기</h1><div id="cvb"></div></div></div>
 <div id="app"><div id="upd">새 버전이 있어요. 눌러서 업데이트</div><div id="ban"></div><div class="stk"><div class="hd" id="hd"></div><div class="tabs" id="tabs"></div></div><div id="main"></div></div>
 <input type="file" id="imp" hidden>
+
+<script src="tree-olive.js"></script>
+<script src="tree-fig.js"></script>
+<script src="tree-palm.js"></script>
+<script src="tree-cedar.js"></script>
+<script src="tree-acacia.js"></script>
+<script src="tree-broom.js"></script>
+<script src="tree-almond.js"></script>
+<script src="tree-mustard.js"></script>
+<script src="tree-vine.js"></script>
+<script src="tree-tamarisk.js"></script>
+ 
 <script>
 const VER='3.2.0',KEY='bible_v1';
 const B=[];'창세기50,출애굽기40,레위기27,민수기36,신명기34,여호수아24,사사기21,룻기4,사무엘상31,사무엘하24,열왕기상22,열왕기하25,역대상29,역대하36,에스라10,느헤미야13,에스더10,욥기42,시편150,잠언31,전도서12,아가8,이사야66,예레미야52,예레미야애가5,에스겔48,다니엘12,호세아14,요엘3,아모스9,오바댜1,요나4,미가7,나훔3,하박국3,스바냐3,학개2,스가랴14,말라기4,마태복음28,마가복음16,누가복음24,요한복음21,사도행전28,로마서16,고린도전서16,고린도후서13,갈라디아서6,에베소서6,빌립보서4,골로새서4,데살로니가전서5,데살로니가후서3,디모데전서6,디모데후서4,디도서3,빌레몬서1,히브리서13,야고보서5,베드로전서5,베드로후서3,요한일서5,요한이서1,요한삼서1,유다서1,요한계시록22'.replace(/([^\d,]+)(\d+)/g,(m,n,c)=>B.push({n,c:+c}));
@@ -205,7 +217,9 @@ function vineT(T,p,r,tot){
  [-14,14,-26,26,-38,38,-48,48].forEach((o,k)=>{if(k<nC&&Math.abs(o)<=La+2)h+=bunch(100+o,46+2.2*Math.sin(Math.abs(o)/6),T.fr)});
  return h}
 function treeSvg(T,p,r,tot){let g=SOIL;
- if(!r)g+=PEB;else if(p<.1)g+=seedT(p);else g+=(T.s=='r'?roundT:T.s=='p'?coneT:T.s=='m'?palmT:vineT)(T,p,r,tot);
+ const X=window.TREEFX&&window.TREEFX[T.n];let ok=0;if(!r)g+=PEB;else{if(X)try{g+=X(T,p,r,tot);ok=1}catch(e){}if(!ok)g+=p<.1?seedT(p):(T.s=='r'?roundT:T.s=='p'?coneT:T.s=='m'?palmT:vineT)(T,p,r,tot)}
+
+                            
  return '<svg viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+T.n+'">'+g+MOUND+(r>=tot?SPK:'')+'</svg>'}
 function prog(t){const [a,b]=GR[t.goal];let r=0;for(let k=a;k<b;k++){const x=t.read[k];if(x)for(let i=0;i<x.length;i++)if(x[i])r++}return r}
 function treeHtml(t){const T=TREES[t.tree],tot=GT[t.goal],r=prog(t),p=r>=tot?1:r/tot,
