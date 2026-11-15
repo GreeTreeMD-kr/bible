@@ -216,11 +216,15 @@ function vineT(T,p,r,tot){
  const nC=r>=tot?8:p<.8?0:Math.min(7,1+Math.floor((p-.8)/.2*7));
  [-14,14,-26,26,-38,38,-48,48].forEach((o,k)=>{if(k<nC&&Math.abs(o)<=La+2)h+=bunch(100+o,46+2.2*Math.sin(Math.abs(o)/6),T.fr)});
  return h}
-function treeSvg(T,p,r,tot){let g=SOIL;
+
+const TC=new Map();
+function treeSvg(T,p,r,tot){if(r&&r<tot)p=Math.max(Math.floor(p*400)/400,.0025);const k=T.n+'|'+tot+'|'+(!r?0:r>=tot?'F':p);let v=TC.get(k);if(!v){v=treeSvg0(T,p,r,tot);if(TC.size>12)TC.clear();TC.set(k,v)}return v}
+  
+function treeSvg0(T,p,r,tot){let g=SOIL;
  const X=window.TREEFX&&window.TREEFX[T.n];let ok=0;if(!r)g+=PEB;else{if(X)try{g+=X(T,p,r,tot);ok=1}catch(e){}if(!ok)g+=p<.1?seedT(p):(T.s=='r'?roundT:T.s=='p'?coneT:T.s=='m'?palmT:vineT)(T,p,r,tot)}
 
                             
- return '<svg viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+T.n+'">'+g+MOUND+(r>=tot?SPK:'')+'</svg>'}
+ return '<svg viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+T.n+'">'+g+MOUND+(r>=tot&&!(X&&X.ns)?SPK:'')+'</svg>'}
 function prog(t){const [a,b]=GR[t.goal];let r=0;for(let k=a;k<b;k++){const x=t.read[k];if(x)for(let i=0;i<x.length;i++)if(x[i])r++}return r}
 function treeHtml(t){const T=TREES[t.tree],tot=GT[t.goal],r=prog(t),p=r>=tot?1:r/tot,
   si=!r?0:r>=tot?7:p<.1?1:p<.25?2:p<.4?3:p<.6?4:p<.8?5:6,pct=r>=tot?100:r?Math.max(1,Math.floor(p*100)):0,
