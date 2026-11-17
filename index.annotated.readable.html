@@ -1,0 +1,2123 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<!-- viewport-fit=cover: 아이폰 노치/홈바 영역까지 화면을 쓰겠다는 뜻. 아래 CSS의 env(safe-area-inset-*)와 짝을 이룸 -->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- theme-color: 안드로이드 크롬 상단바 색. 배경색(--bg)과 같게 맞춤 -->
+<meta name="theme-color" content="#fdf6ee"><link rel="manifest" href="manifest.json">
+<!-- PWA(홈 화면에 추가) 관련: 아이폰 아이콘, 전체화면 앱 모드 -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<title>푸른나무교회 성경 통독하기</title>
+<style>
+/* ===== 디자인 토큰(CSS 변수) =====
+ --bg 배경 / --ink 본문색 / --sub 보조 글자색 / --line 테두리선 / --sk 하늘색 강조
+ --c1~c4 : 장 칸(셀)의 배경색. 1회·2회·3회·4회 이상 읽은 횟수별 (연한 톤)
+ --d1~d4 : 진행 막대용 진한 톤 (같은 1~4회 의미)
+ --du    : '중복제거 보기'에서 쓰는 보라색
+ --fs    : 기준 글자 크기. 자바스크립트 applyFs()가 17px/21px로 바꿔 줌 */
+:root {
+  --bg:#fdf6ee;
+  --ink:#2f3e5c;
+  --sub:#5c6a86;
+  --line:#eadfd2;
+  --sk:#cbe6fa;
+  --c1:#FFF0B0;
+  --c2:#D9F3C9;
+  --c3:#CBE6FA;
+  --c4:#F9D3E3;
+  --fs:17px;
+  --d1:#F2C94C;
+  --d2:#79C768;
+  --d3:#4FA3E8;
+  --d4:#EC7BA6;
+  --du:#9B7FD6
+}
+
+/* 모든 요소 box-sizing 통일, 모바일 탭 시 회색 하이라이트 제거 */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color:transparent
+}
+
+/* html 글자 크기를 바꾸면 rem 단위를 쓰는 모든 글자가 함께 커짐(글자 크기 '크게' 기능의 원리) */
+html {
+  font-size: var(--fs)
+}
+
+/* padding-top: 아이폰 상단 노치 아래로 내용이 내려오게 함 */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  padding-top: env(safe-area-inset-top)
+}
+
+/* 버튼/입력창이 브라우저 기본 글꼴 대신 본문 글꼴·색을 쓰게 함 */
+button,input,select,textarea {
+  font: inherit;
+  color: inherit
+}
+
+/* .b : 앱 전체 공용 버튼 스타일.  .on=선택됨(연보라), .fx=하늘색 강조 버튼, .w=가로 꽉 찬 버튼 */
+.b {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: .85rem;
+  font-weight: 600;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap
+}
+.b.on {
+  background: #E4DBF6;
+  border-color: #cdbff0
+}
+.b.fx {
+  background: var(--sk);
+  border-color: var(--sk)
+}
+.b.fx.on {
+  background: #9cc8ee;
+  border-color: #9cc8ee
+}
+.b.w {
+  width: 100%;
+  margin-top: 10px
+}
+
+/* .inf : 작은 안내 문구(회색 굵은 글씨) */
+.inf {
+  font-size: .9rem;
+  color: var(--sub);
+  font-weight: 600
+}
+
+/* ===== 표지(커버) 화면: 화면 전체를 덮는 고정 레이어 ===== */
+#cover {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(160deg,#d6eafb,#fde0ea 55%,#fff0c4);
+  overflow: hidden
+}
+
+/* cover.jpg가 있으면 배경 전체에 깔림(없으면 HTML의 onerror가 img를 지우고 그라데이션만 보임) */
+#cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover
+}
+
+/* 표지 가운데 반투명 흰 카드 */
+.box {
+  position: relative;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(6px);
+  border-radius: 30px;
+  padding: 30px 24px 20px;
+  width: min(88%,380px);
+  box-shadow: 0 12px 40px #6f7fa526
+}
+.box h1 {
+  margin: 8px 0 14px;
+  font-size: 1.6rem;
+  line-height: 1.35;
+  letter-spacing: -.02em
+}
+.gr {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+  line-height: 1.6
+}
+
+/* #nm : 이름 입력칸, .go : 시작하기 버튼 */
+#nm {
+  width: 100%;
+  border: 2px solid var(--sk);
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  font-size: 1.1rem;
+  text-align: center;
+  outline: none;
+  margin-bottom: 14px
+}
+.go {
+  width: 100%;
+  border: 0;
+  border-radius: 16px;
+  padding: 15px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: #BFE5C4
+}
+
+/* .lks : 표지 아래 '이름 바꾸기 / 데이터 관리' 링크줄, .ft a : 화면 하단 푸터 링크 */
+.lks {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 12px
+}
+.lks a,.ft a {
+  font-size: .8rem;
+  color: var(--sub);
+  text-decoration: underline;
+  padding: 8px 4px
+}
+
+/* 이름을 비우고 시작을 눌렀을 때 입력칸이 좌우로 흔들리는 효과 */
+.shake {
+  animation: sh .4s
+}
+@keyframes sh {
+  25% {
+    transform: translateX(-7px)
+  }
+  75% {
+    transform: translateX(7px)
+  }
+}
+
+/* ===== 본 앱 영역(처음엔 숨김, 시작하기를 누르면 보임) ===== */
+#app {
+  display: none;
+  padding: 10px 14px 40px;
+  max-width: 680px;
+  margin: 0 auto
+}
+
+/* #upd : 새 버전이 있을 때 맨 위에 뜨는 노란 알림 */
+#upd {
+  display: none;
+  background: var(--c1);
+  padding: 12px;
+  border-radius: 14px;
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: 700
+}
+
+/* .bn : 안내 배너(카카오톡 경고, 홈 화면 추가 안내, 백업 권유, 사용법 팁) */
+.bn {
+  background: #fff;
+  border: 2px solid var(--c1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: .85rem;
+  line-height: 1.55
+}
+.bn .b {
+  margin: 8px 8px 0 0
+}
+
+/* .stk : 스크롤해도 위에 붙어 있는 헤더(제목+탭). 아이폰 노치 아래에 붙도록 top에 safe-area를 더함 */
+.stk {
+  position: sticky;
+  top: env(safe-area-inset-top,0px);
+  z-index: 4;
+  background: var(--bg);
+  padding: 4px 0 10px
+}
+.hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px
+}
+
+/* h2 : '○○의 성경읽기 ✎' 제목. 눌러서 이름 수정 가능하므로 cursor:pointer. 긴 이름은 …으로 줄임 */
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  cursor: pointer
+}
+h2 span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap
+}
+
+/* .tabs : 통독표 탭 줄(가로 스크롤, 스크롤바 숨김). .tab.on=현재 탭, .tab.pl='＋ 새 통독표' 점선 탭 */
+.tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none
+}
+.tabs::-webkit-scrollbar {
+  display: none
+}
+.tab {
+  flex: none;
+  border: 2px solid transparent;
+  opacity: .75
+}
+.tab.on {
+  opacity: 1;
+  border-color: var(--ink);
+  font-weight: 700
+}
+.tab.pl {
+  background: #fff;
+  border: 2px dashed var(--line);
+  opacity: 1
+}
+
+/* .card : 흰 카드 공용 스타일, .trow : 카드 안의 한 줄(가로 정렬) */
+.card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 18px #7f8fb314
+}
+.trow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  min-height: 40px
+}
+.trow:last-child {
+  margin-bottom: 0
+}
+.prog {
+  font-weight: 700;
+  color: var(--sub);
+  font-size: .9rem;
+  white-space: nowrap
+}
+.acts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px
+}
+
+/* .st : 진행 막대 한 줄 = [이름 | 막대 | 퍼센트] 3칸 그리드 */
+.st {
+  display: grid;
+  grid-template-columns: 2.6em 1fr 3.8em;
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0;
+  font-size: .9rem
+}
+.st em {
+  font-style: normal;
+  text-align: right;
+  font-weight: 700
+}
+
+/* .pb : 막대 바탕, .pb i : 막대 채움(회독별로 겹쳐 쌓음). 너비는 JS가 인라인으로 지정 */
+.pb {
+  position: relative;
+  height: 18px;
+  background: #efe6da;
+  border-radius: 9px;
+  overflow: hidden
+}
+.pb i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 0 9px 9px 0;
+  transition: width .4s
+}
+
+/* .lg : 막대 아래 범례(한 번/두 번/세 번/네 번 이상) */
+.lg {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: .74rem;
+  margin-top: 10px
+}
+.lg span {
+  padding: 3px 9px;
+  border-radius: 9px;
+  color: #1f2a44;
+  font-weight: 700
+}
+.mini {
+  font-size: .78rem;
+  color: var(--sub);
+  margin-top: 10px;
+  line-height: 1.5
+}
+select {
+  border: 2px solid var(--sk);
+  border-radius: 12px;
+  background: #fff;
+  height: 40px;
+  padding: 0 10px;
+  font-weight: 700;
+  font-size: .85rem;
+  max-width: 48%
+}
+
+/* ===== 장 칸(그리드) =====
+ .g : 열 개수는 --n 변수(5 또는 10)로 결정. container-type:inline-size로 '컨테이너 쿼리 단위(cqw)'를 쓸 수 있게 함
+ .c : 칸 하나(정사각형). 글자 크기를 칸 너비에 비례하게(calc(100cqw / n * .42)) 계산.
+ 바로 앞의 font-size:.7rem은 cqw를 지원하지 않는 구형 브라우저용 대비책 */
+.g {
+  display: grid;
+  gap: 5px;
+  container-type: inline-size;
+  grid-template-columns: repeat(var(--n),minmax(0,1fr))
+}
+.c {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: .7rem;
+  font-size: calc(100cqw / var(--n) * .42)
+}
+
+/* .v1~.v4 : 읽은 횟수별 칸 색. .vu : 중복제거 보기용 보라. !important는 .c의 흰 배경을 이기기 위함 */
+.v1 {
+  background: var(--c1)!important
+}
+.v2 {
+  background: var(--c2)!important
+}
+.v3 {
+  background: var(--c3)!important
+}
+.v4 {
+  background: var(--c4)!important
+}
+.vu {
+  background: #D9CCF2!important
+}
+
+/* .ck : 2회독 이상일 때, '이번 회차에 읽음'을 칸 오른쪽 위 ✓ 로 표시 */
+.ck::after {
+  content: "✓";
+  position: absolute;
+  right: 2px;
+  top: 0;
+  font-size: .7em;
+  color: #3e7d54
+}
+
+/* .pop : 칸을 막 눌러 읽음 처리했을 때 살짝 커졌다 돌아오는 효과 */
+.pop {
+  animation: pp .3s
+}
+@keyframes pp {
+  50% {
+    transform: scale(1.15)
+  }
+}
+
+/* .sgr : 5열/10열/전체 같은 분할 버튼 줄 */
+.sgr {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px
+}
+.sgr .b {
+  flex: 1
+}
+
+/* ===== 성경 전체 지도(map) : 왼쪽 약어 라벨 1칸 + 장 10칸 =====
+ .map i : 장 하나(작은 칸), .map u/s : 빈 자리 채우기용 요소, .lb : 책 약어 라벨 */
+.map {
+  display: grid;
+  gap: 2px;
+  grid-template-columns: 26px repeat(10,minmax(0,1fr));
+  container-type: inline-size
+}
+.map h4 {
+  grid-column: 1/-1;
+  margin: 12px 0 4px;
+  font-size: .9rem
+}
+.map i {
+  aspect-ratio: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid var(--line);
+  font-style: normal;
+  overflow: hidden;
+  font-size: 9px;
+  font-size: calc(100cqw / 11 * .38)
+}
+.map u,.map s {
+  text-decoration: none
+}
+.lb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 0
+}
+.ft {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--sub);
+  font-size: .78rem;
+  padding: 0 4px
+}
+
+/* .dmv : '데이터 관리' 전체 화면 오버레이, .mo : 팝업 뒤 어두운 막, .md : 팝업 상자 */
+.dmv {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: var(--bg);
+  overflow: auto;
+  padding: calc(env(safe-area-inset-top) + 14px) 14px 40px
+}
+.dmi {
+  max-width: 480px;
+  margin: 0 auto
+}
+.mo {
+  position: fixed;
+  inset: 0;
+  background: #2f3e5c55;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center
+}
+.md {
+  background: #fff;
+  border-radius: 22px;
+  padding: 20px;
+  width: min(86%,340px)
+}
+.md p {
+  margin: 0 0 12px;
+  line-height: 1.5
+}
+.md input,.md textarea {
+  width: 100%;
+  border: 2px solid var(--sk);
+  border-radius: 12px;
+  padding: 11px;
+  margin-bottom: 10px
+}
+.md button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  height: 44px;
+  margin-top: 8px;
+  background: var(--sk);
+  font-weight: 600
+}
+.md button:last-child {
+  background: var(--bg)
+}
+
+/* .sw : 팝업 안의 색 고르기 동그라미들, b.on=선택된 색 */
+.sw {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 8px
+}
+.sw b {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1.5px var(--line)
+}
+.sw b.on {
+  box-shadow: 0 0 0 3px var(--ink)
+}
+
+/* .toast : 화면 아래 잠깐 뜨는 안내 메시지, .ub : 토스트 안의 '되돌리기' 버튼 */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(30px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 14px;
+  z-index: 10;
+  font-size: .9rem;
+  max-width: 90%;
+  text-align: center
+}
+.ub {
+  border: 0;
+  background: #fff;
+  color: var(--ink);
+  border-radius: 9px;
+  padding: 6px 10px;
+  margin-left: 8px;
+  font-weight: 700
+}
+
+/* 한국어 줄바꿈 품질: 단어 단위로 끊고(keep-all), 균형 있게 나눔(balance) */
+.md p,.toast,.bn,.mini,.gr,.inf {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: balance
+}
+
+/* 칸을 길게 눌렀을 때 글자 선택/미리보기 메뉴가 뜨지 않도록 막고, .sel은 드래그 범위 선택 중 표시(굵은 테두리) */
+.c {
+  -webkit-user-select:none;
+  user-select: none;
+  -webkit-touch-callout:none
+}
+.c.sel {
+  box-shadow: inset 0 0 0 3px var(--ink)
+}
+.lb[data-bk] {
+  cursor: pointer;
+  text-decoration: underline
+}
+.map i[data-mi] {
+  cursor: pointer
+}
+
+/* .nw : 줄바꿈 금지, .nn : 길면 …으로 줄이는 이름 표시(삭제 확인창의 통독표 이름용) */
+.nw {
+  white-space: nowrap
+}
+.nn {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom
+}
+
+/* ===== 나무 카드 ===== */
+.tl {
+  flex: none;
+  min-width: 4.6em
+}
+.tsel {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  text-overflow: ellipsis
+}
+
+/* .tv : 나무 그림 상자(SVG를 넣음), .stars : 이전에 완성한 횟수만큼 ★ 표시(우상단) */
+.tv {
+  position: relative;
+  max-width: 260px;
+  margin: 6px auto 0
+}
+.tv svg {
+  width: 100%;
+  height: auto;
+  display: block
+}
+.stars {
+  position: absolute;
+  right: 0;
+  top: 6px;
+  max-width: 3.4em;
+  font-size: .8rem;
+  line-height: 1.15;
+  color: #E3A91B;
+  text-align: right;
+  word-break: break-all
+}
+.tst {
+  text-align: center;
+  font-size: .92rem;
+  margin-top: 2px
+}
+.tvs {
+  font-size: .74rem;
+  color: var(--sub);
+  line-height: 1.6;
+  margin-top: 8px;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: pretty
+}
+
+/* .fin : 나무를 100% 완성했을 때 가운데 잠깐 뜨는 '완성했어요!' 팝업. pointer-events:none이라 터치를 막지 않음 */
+.fin {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%,-50%);
+  z-index: 11;
+  background: #fff;
+  color: var(--ink);
+  border: 3px solid var(--d2);
+  border-radius: 22px;
+  padding: 16px 28px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  box-shadow: 0 10px 30px #2f3e5c33;
+  pointer-events: none;
+  animation: fin 2.6s forwards
+}
+@keyframes fin {
+  0% {
+    opacity: 0;
+    transform: translate(-50%,-50%) scale(.6)
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%,-50%) scale(1.08)
+  }
+  22% {
+    transform: translate(-50%,-50%) scale(1)
+  }
+  85% {
+    opacity: 1
+  }
+  100% {
+    opacity: 0
+  }
+}
+
+/* cqw 단위를 지원하지 않는 브라우저에서는 고정 글자 크기로 대체 */
+@supports not (font-size:1cqw) {
+  .c {
+    font-size: .8rem
+  }
+  .g[style*="--n:10"] .c {
+    font-size: .6rem
+  }
+  .map i {
+    font-size: 8px
+  }
+}
+
+/* 기기 설정에서 '동작 줄이기'를 켠 사용자에게는 모든 애니메이션 끔(접근성) */
+@media(prefers-reduced-motion:reduce) {
+  * {
+    animation: none!important;
+    transition: none!important
+  }
+}
+</style></head><body>
+<!-- ===== 표지 화면 ===== -->
+<!-- #tr: 나무 아이콘 자리, #cvb: 인사말/이름입력/시작 버튼이 JS(showCover)로 채워지는 자리 -->
+<div id="cover"><img src="cover.jpg?v=3" alt="" onerror="this.remove()"><div class="box"><div id="tr"></div><h1>푸른나무교회<br>성경 통독하기</h1><div id="cvb"></div></div></div>
+<!-- ===== 본 앱 뼈대 =====
+     #upd 업데이트 알림 / #ban 배너 / #hd 제목줄 / #tabs 통독표 탭 / #main 본문(표 또는 현황) — 모두 JS render()가 채움 -->
+<div id="app"><div id="upd">새 버전이 있어요. 눌러서 업데이트</div><div id="ban"></div><div class="stk"><div class="hd" id="hd"></div><div class="tabs" id="tabs"></div></div><div id="main"></div></div>
+<!-- 백업 파일 불러오기용 숨겨진 파일 선택창 (JS에서 .click()으로 호출) -->
+<input type="file" id="imp" hidden>
+
+<!-- 나무 종류별 그림 그리기 코드(외부 파일). 각 파일은 window.TREEFX['나무이름'] 함수를 등록하며,
+     없거나 오류가 나면 아래 본문의 기본 그리기 함수(roundT/coneT/palmT/vineT)로 대신 그림 -->
+<script src="tree-olive.js"></script>
+<script src="tree-fig.js"></script>
+<script src="tree-palm.js"></script>
+<script src="tree-cedar.js"></script>
+<script src="tree-acacia.js"></script>
+<script src="tree-broom.js"></script>
+<script src="tree-almond.js"></script>
+<script src="tree-mustard.js"></script>
+<script src="tree-vine.js"></script>
+<script src="tree-tamarisk.js"></script>
+ 
+<script>
+/* ============================================================
+   [앱 전체 구조 요약]
+   1) 데이터(S)   : localStorage에 저장되는 상태 객체. 통독표(tables) 여러 개 + UI 설정(ui)
+   2) 계산 함수   : 읽은 횟수 집계(cnt, st, rd, mn, prog)
+   3) 화면 조각   : HTML 문자열을 만들어 innerHTML로 넣는 방식(tbHtml, ovHtml, treeHtml ...)
+   4) 나무 그림   : 진행률(p)에 따라 SVG 문자열을 직접 생성
+   5) 이벤트      : 클릭은 document 하나에 모아 data-* 속성으로 분기(이벤트 위임)
+   6) 백업/복원   : JSON 파일 또는 텍스트(BIBLE1:...)로 내보내기/불러오기
+   7) 길게 눌러 범위 선택(터치), 서비스워커(오프라인/업데이트)
+   ============================================================ */
+/* VER: 앱 버전 표시용. KEY: localStorage에 저장할 때 쓰는 이름 */
+const VER='3.2.0',KEY='bible_v1';
+
+/* ----- 성경 66권 목록 B 만들기 -----
+   '창세기50,출애굽기40,...' 형태의 문자열에서 정규식으로 (이름)(숫자)를 뽑아 B 배열에 {n:이름, c:장수}로 넣음.
+   replace의 콜백이 B.push(...)를 실행하는 것이 목적이고, replace의 반환 문자열 자체는 쓰이지 않음 */
+const B=[];
+'창세기50,출애굽기40,레위기27,민수기36,신명기34,여호수아24,사사기21,룻기4,사무엘상31,사무엘하24,열왕기상22,열왕기하25,역대상29,역대하36,에스라10,느헤미야13,에스더10,욥기42,시편150,잠언31,전도서12,아가8,이사야66,예레미야52,예레미야애가5,에스겔48,다니엘12,호세아14,요엘3,아모스9,오바댜1,요나4,미가7,나훔3,하박국3,스바냐3,학개2,스가랴14,말라기4,마태복음28,마가복음16,누가복음24,요한복음21,사도행전28,로마서16,고린도전서16,고린도후서13,갈라디아서6,에베소서6,빌립보서4,골로새서4,데살로니가전서5,데살로니가후서3,디모데전서6,디모데후서4,디도서3,빌레몬서1,히브리서13,야고보서5,베드로전서5,베드로후서3,요한일서5,요한이서1,요한삼서1,유다서1,요한계시록22'.replace(/([^\d,]+)(\d+)/g,(m,n,c)=>B.push({n,c:+c}));
+
+/* AB: 책 약어(지도 왼쪽 라벨용). B와 같은 순서(66개) */
+const AB='창,출,레,민,신,수,삿,룻,삼상,삼하,왕상,왕하,대상,대하,스,느,에,욥,시,잠,전,아,사,렘,애,겔,단,호,욜,암,옵,욘,미,나,합,습,학,슥,말,마,막,눅,요,행,롬,고전,고후,갈,엡,빌,골,살전,살후,딤전,딤후,딛,몬,히,약,벧전,벧후,요일,요이,요삼,유,계'.split(',');
+
+/* OT=구약 권수(39), OTC=구약 총 장수, NTC=신약 총 장수, TOT=전체 장수
+   PAL=통독표 색 6가지(탭·카드 테두리 등에 사용) */
+const OT=39,
+  OTC=929,
+  NTC=260,
+  TOT=1189,
+  PAL=['#E4DBF6','#FFD8CC','#C9EEE2','#FFE0B5','#F0D5F2','#D5DEEE'];
+
+/* DK: 진한 색(막대용) / CL: 연한 색 / NM: 막대 범례 문구 / ORD: '첫 번째 읽는 중' 같은 서수 표기용
+   배열 0번째는 비워 두고 1부터 쓰기 위해 ''를 넣어 둠 */
+const DK=['','var(--d1)','var(--d2)','var(--d3)','var(--d4)'],
+  CL=['','var(--c1)','var(--c2)','var(--c3)','var(--c4)'],
+  NM=['한 번','두 번','세 번','네 번'],
+  ORD=['','첫','두','세','네','다섯','여섯','일곱','여덟','아홉','열'];
+
+/* $: querySelector 줄임. esc: 사용자가 입력한 글을 HTML에 넣을 때 &,<,>," 를 안전한 문자로 바꿔 코드 주입(XSS)을 막음 */
+const $=s=>document.querySelector(s),
+  esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* uid: 시간+난수로 만든 짧은 고유 ID (통독표 구분용) */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* today: '11월 17일' 같은 시작일 문자열 */
+const today=()=>{
+  const d=new Date();
+  return (d.getMonth()+1)+'월 '+d.getDate()+'일'
+};
+
+/* mk: 새 통독표 객체 생성.
+   id 고유ID / name 이름 / color 팔레트 번호 / round 몇 번째 읽기 / start 시작일 / book 현재 보고 있는 책 번호
+   base 지난 회차까지 누적 읽은 횟수 {책번호:[장별 횟수]} / read 이번 회차에 읽은 장 {책번호:[0 또는 1]}
+   tree 나무 종류 번호 / goal 나무 목표(a 전체, n 신약, o 구약) / done 나무 완성 횟수 / fin 완성 팝업을 이미 띄운 목표 */
+const mk=(n,c)=>({id:uid(),name:n,color:c,round:1,start:today(),book:0,base:{},read:{},tree:0,goal:'a',done:0,fin:''});
+
+/* TR(크기): 표지/제목 옆에 쓰는 작은 나무 아이콘 SVG 문자열 */
+const TR=s=>'<svg viewBox="0 0 64 64" width="'+s+'" height="'+s+'" style="vertical-align:middle;flex:none"><circle cx="32" cy="24" r="18" fill="#BFE5C4"/><circle cx="20" cy="33" r="12" fill="#CDEBD0"/><circle cx="44" cy="33" r="12" fill="#B3DEB9"/><rect x="29" y="40" width="6" height="17" rx="3" fill="#E8C9A8"/></svg>';
+
+/* ===== 상태 S 불러오기 =====
+   저장된 JSON이 있으면 읽고, 깨졌거나 없으면 기본값. */
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{name:'',tables:[],ui:{}};
+
+/* ui 기본값 채우기: cols 열 수 / fs 글자크기(0 보통, 1 크게) / tab 현재 탭(-1=나의 통독 현황)
+   view 현황 보기(c 횟수별, u 중복제거) / sec 현황 지도 범위 / tsec 표 '전체' 보기 범위 / vw 표 보기(g 칸 표, m 전체 지도)
+   열 수는 5 또는 10만 허용(그 외 값은 10으로) */
+S.ui=Object.assign({cols:5,fs:0,tab:0,view:'c',sec:'a',tsec:'a',vw:'g'},S.ui);
+if(S.ui.cols!=5)S.ui.cols=10;
+
+/* 옛 버전에서 저장된 통독표에 빠진 필드를 채우고 값 범위를 보정(데이터 마이그레이션) */
+S.tables.forEach((t,i)=>{
+  t.base=t.base||{};
+  t.round=t.round||1;
+  t.color=t.color==null?i%6:t.color;
+  t.start=t.start||'';
+  t.book=t.book|0;
+  t.tree=Math.min(9,Math.max(0,t.tree|0));
+  t.goal=/^[ano]$/.test(t.goal)?t.goal:'a';
+  t.done=t.done|0;
+  t.fin=t.fin||''
+});
+
+/* 아주 옛 버전의 '보관함(arch)'을 일반 통독표로 옮기고 arch 항목은 삭제 */
+(S.arch||[]).forEach(a=>S.tables.push({id:a.id,name:a.name,color:0,round:1,start:'',book:0,base:{},read:a.read,tree:0,goal:'a',done:0,fin:''}));
+delete S.arch;
+
+/* since: 처음 사용한 시각(백업 권유 기준). 통독표가 하나도 없으면 기본 표 하나 생성 */
+S.since=S.since||Date.now();
+if(!S.tables.length)S.tables.push(mk('내 통독표',0));
+
+/* save: localStorage에 저장(용량 초과·사생활 보호 모드 등 오류는 무시) */
+const save=()=>{
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+};
+
+/* applyFs: 글자 크기 설정(0→17px, 1→21px)을 CSS 변수 --fs에 반영 */
+const applyFs=()=>document.documentElement.style.setProperty('--fs',[17,21][S.ui.fs]+'px');
+
+/* ===== 읽은 횟수 계산 =====
+   cnt(t,b,i): 통독표 t의 b번 책 i번 장을 지금까지 몇 번 읽었나 = 이전 회차 누적(base) + 이번 회차(read) */
+const cnt=(t,b,i)=>((t.base[b]||[])[i]|0)+((t.read[b]||[])[i]|0);
+
+/* pc: 비율을 소수점 1자리 퍼센트 문자열로 */
+const pc=(x,t)=>(x/t*100).toFixed(1);
+
+/* hasMark: 이번 회차에 체크한 칸이 하나라도 있는지 */
+const hasMark=t=>Object.values(t.read).some(a=>a.some(x=>x));
+
+/* st(f): 구약(o)·신약(n) 각각 '1회 이상/2회 이상/3회 이상/4회 이상 읽은 장 수'를 센다.
+   f(책,장)은 읽은 횟수를 돌려주는 함수(표 하나일 땐 cnt, 합산일 땐 여러 표의 합). 결과 예: r.o=[5회독 장수들...] */
+function st(f){
+  const r={o:[0,0,0,0],n:[0,0,0,0]};
+  B.forEach((k,b)=>{
+    const a=b<OT?r.o:r.n;
+    for(let i=0;i<k.c;i++){
+      const v=f(b,i);
+      for(let j=0;j<4;j++)if(v>j)a[j]++
+    }
+  });
+  return r
+}
+
+/* rd(f,b): b번 책에서 한 번이라도 읽은 장 수 */
+const rd=(f,b)=>{
+  let d=0;
+  for(let i=0;i<B[b].c;i++)if(f(b,i)>0)d++;
+  return d
+};
+
+/* mn(f,b): b번 책에서 가장 적게 읽은 장의 횟수(=그 책을 완독한 횟수). 지도 라벨 색과 '완독 N회' 계산에 사용 */
+const mn=(f,b)=>{
+  let m=1e9;
+  for(let i=0;i<B[b].c;i++)m=Math.min(m,f(b,i));
+  return m
+};
+
+/* cc(v): 횟수 v에 맞는 CSS 클래스(' v1'~' v4'), 0회면 빈 문자열. 4회 이상은 v4로 통일 */
+const cc=v=>v?' v'+Math.min(v,4):'';
+
+/* snap: 되돌리기를 위해 현재 통독표들/탭/이름을 통째로 JSON 문자열로 저장해 둠 */
+const snap=()=>JSON.stringify({t:S.tables,tab:S.ui.tab,n:S.name});
+
+/* clr: 떠 있는 토스트 모두 제거 */
+const clr=()=>document.querySelectorAll('.toast').forEach(x=>x.remove());
+
+/* toast: 3초간 보이는 안내 메시지 */
+function toast(m){
+  clr();
+  const d=document.createElement('div');
+  d.className='toast';
+  d.textContent=m;
+  document.body.append(d);
+  setTimeout(()=>d.remove(),3000)
+}
+
+/* toastU: '되돌리기' 버튼이 달린 토스트(2초). 누르면 snap으로 저장해 둔 상태로 복원 */
+function toastU(m,sn){
+  clr();
+  const d=document.createElement('div');
+  d.className='toast';
+  d.innerHTML=esc(m)+'<button class="ub">되돌리기</button>';
+  d.querySelector('button').onclick=()=>{
+    const o=JSON.parse(sn);
+    S.tables=o.t;
+    S.ui.tab=o.tab;
+    if(o.n!=null)S.name=o.n;
+    save();
+    d.remove();
+    render(0);
+    toast('되돌렸어요')
+  };
+  document.body.append(d);
+  setTimeout(()=>d.remove(),2000)
+}
+
+/* ask(메시지, 버튼들): 확인창. Promise를 돌려주고, 사용자가 누른 버튼의 번호(0,1,2...)로 resolve.
+   사용 예) if(await ask('삭제할까요?',['삭제','취소'])!=0) return; */
+function ask(m,bs){
+  return new Promise(r=>{
+    const d=document.createElement('div');
+    d.className='mo';
+    d.innerHTML='<div class="md"><p>'+m+'</p>'+bs.map((b,i)=>'<button data-q="'+i+'">'+b+'</button>').join('')+'</div>';
+    d.onclick=e=>{
+      const i=e.target.dataset.q;
+      if(i!=null){
+        d.remove();
+        r(+i)
+      }
+    };
+    document.body.append(d)
+  })
+}
+
+/* askIn(메시지, 기본값, 색번호): 글자 입력 팝업. col이 주어지면 색 고르기 동그라미도 보여 줌.
+   확인 시 {v:입력값, c:선택한 색}, 취소하거나 빈 값이면 null 반환 */
+function askIn(m,v,col){
+  return new Promise(r=>{
+    let ci=col;
+    const d=document.createElement('div');
+    d.className='mo';
+    d.innerHTML='<div class="md"><p>'+m
+      +'</p><input id="ai" maxlength="14" value="'+esc(v)+'">'+(col!=null?'<div class="sw">'+PAL.map((c,i)=>'<b data-s="'+i+'" style="background:'+c+'" class="'+(i==col?'on':'')+'"></b>').join('')+'</div>':'')
+      +'<button data-q="0">확인</button><button data-q="1">취소</button></div>';
+    d.onclick=e=>{
+      const s=e.target.dataset.s;
+      if(s!=null){
+        ci=+s;
+        d.querySelectorAll('.sw b').forEach((x,i)=>x.classList.toggle('on',i==ci));
+        return
+      }
+      const q=e.target.dataset.q;
+      if(q!=null){
+        const val=$('#ai').value.trim();
+        d.remove();
+        r(q==0&&val?{v:val,c:ci}:null)
+      }
+    };
+    document.body.append(d);
+    setTimeout(()=>$('#ai').focus(),50)
+  })
+}
+
+/* bars(r, m): 구약/신약/전체 진행 막대 3줄 + (횟수별 모드일 때) 범례를 HTML로 만든다.
+   r = st()의 결과, m = 'u'면 중복제거(한 번이라도 읽은 것만 보라색), 아니면 횟수별 색.
+   횟수별 모드: 1회 이상 막대(가장 넓음)부터 4회 이상(가장 좁음)까지 겹쳐 그리고 z-index를 크게 줘서
+   더 많이 읽은 구간의 진한 색이 위로 보이게 함. 오른쪽 숫자는 '1회 이상 읽은 비율' */
+function bars(r,m){
+  const rows=[['구약',r.o,OTC],['신약',r.n,NTC],['전체',r.o.map((x,j)=>x+r.n[j]),TOT]];
+  const h=rows.map(([n,a,t])=>{
+    const ly=m=='u'?'<i style="width:'+pc(a[0],t)+'%;background:var(--du);z-index:1"></i>':[0,1,2,3].filter(j=>j==0||a[j]>0).map(j=>'<i style="width:'+pc(a[j],t)+'%;background:'+DK[j+1]+';z-index:'+(j+1)+'"></i>').join('');
+    return '<div class="st"><span>'+n+'</span><div class="pb">'+ly+'</div><em>'+pc(a[0],t)+'%</em></div>'
+  }).join('');
+  return h+(m=='u'?'':'<div class="lg">'+NM.map((n,j)=>'<span style="background:'+DK[j+1]+'">'+n+(j==3?' 이상':'')+'</span>').join('')+'</div>')
+}
+
+/* bsel(f,n): 책 선택 드롭다운(<select>) HTML. 구약/신약 그룹으로 나누고, 끝까지 다 읽은 책 이름 뒤에 ✓ 표시 */
+function bsel(f,n){
+  let h='<select id="bs">';
+  B.forEach((k,b)=>{
+    if(b==0)h+='<optgroup label="구약">';
+    if(b==OT)h+='</optgroup><optgroup label="신약">';
+    h+='<option value="'+b+'"'+(b==n?' selected':'')+'>'+k.n+(rd(f,b)==k.c?' ✓':'')+'</option>'
+  });
+  return h+'</optgroup></select>'
+}
+
+/* pop: 방금 눌러 읽음 처리한 장 번호(그 칸에만 .pop 애니메이션). 없으면 -1 */
+let pop=-1;
+
+/* ===== 나무 키우기 ===== */
+/* GN: 목표 이름 / GT: 목표별 총 장수 / GR: 목표별 책 번호 범위 [시작, 끝) — prog()가 이 범위만 센다 */
+const GN={a:'성경 전체',n:'신약만',o:'구약만'},
+  GT={a:TOT,n:NTC,o:OTC},
+  GR={a:[0,B.length],n:[OT,B.length],o:[0,OT]};
+
+/* SG: 성장 단계 이름과 진행률 구간(표시용). treeHtml에서 진행률에 따라 0~7번 단계를 고름 */
+const SG=[['맨땅','0%'],['씨앗','1~9%'],['새싹','10~24%'],['어린 나무','25~39%'],['가지가 뻗는 나무','40~59%'],['나무','60~79%'],['큰 나무','80~99%'],['완성','100%']];
+
+/* TREES: 고를 수 있는 나무 목록.
+   n 이름 / d 설명 / s 기본 그림 모양(r 둥근 수관, m 종려형, p 원뿔형, v 포도덩굴형)
+   tc 줄기색 / lc 잎색(다 자랐을 때) / fk 열매 종류(o 올리브, a 아몬드, g 포도, 빈 값은 열매 없음) / fr 열매색
+   v 관련 성경 구절 / r 구절 위치 */
+const TREES=[
+{n:'감람나무',d:'평화와 기름부음의 나무',s:'r',tc:'#8B7355',lc:'#6E9A6A',fk:'o',fr:'#4B3B63',v:'나는 하나님의 집에 있는 푸른 감람나무 같음이여 내가 영원히 하나님의 인자하심을 의지하리로다',r:'시편 52:8'},
+{n:'종려나무',d:'승리와 번성을 뜻하는 늘 푸른 나무',s:'m',tc:'#A98B63',lc:'#1F8F5A',fk:'',fr:'',v:'이 일 후에 내가 보니 각 나라와 족속과 백성과 방언에서 아무라도 능히 카일 수 없는 큰 무리가 흰 옷을 입고 손에 종려 가지를 들고 보좌 앞과 어린 양 앞에 서서',r:'계 7:9'},
+{n:'백향목',d:'높고 곧게 자라 성전의 기둥이 되는 나무',s:'p',tc:'#7B5A3C',lc:'#1B5E4B',fk:'',fr:'',v:'레바논의 백향목 같이 뿌리가 박힐 것이라 그 가지는 퍼지며 그의 아름다움은 감람나무와 같고 그의 향기는 레바논의 백향목 같으리니',r:'호세아 14:5-6'},
+{n:'조각목',d:'사막을 견뎌 언약궤가 된 나무',s:'r',tc:'#8A6B45',lc:'#7BA33A',fk:'',fr:'',v:'그들은 조각목으로 궤를 짜되 길이는 두 규빗 반, 너비는 한 규빗 반, 높이는 한 규빗 반이 되게 하고',r:'출애굽기 25:10'},
+{n:'로뎀나무',d:'지친 이에게 그늘이 되는 쉼의 나무',s:'r',tc:'#9A7B55',lc:'#3E7F3D',fk:'',fr:'',v:'로뎀 나무 아래에 누워 자더니 천사가 그를 어루만지며 그에게 이르되 일어나서 먹으라 하는지라',r:'열왕기상 19:5'},
+{n:'아몬드나무',d:'성경의 살구나무 · 가장 먼저 봄을 알리는 나무',s:'r',tc:'#8C5E45',lc:'#2F9E6B',fk:'a',fr:'#F6A93B',v:'여호와의 말씀이 내게 임하여 이르시되 예레미야야 네가 무엇을 보느냐 하시기로 내가 대답하되 살구나무 가지를 보나이다 여호와께서 내게 이르시되 네가 잘 보았도다 이는 내가 내 말을 지켜 그대로 이루려 함이라 하시니라',r:'예레미야 1:11-12'},
+{n:'겨자나무',d:'작은 씨앗에서 크게 자라는 나무',s:'r',tc:'#9A8050',lc:'#4CAF50',fk:'',fr:'',v:'마치 사람이 자기 채소밭에 갖다 심은 겨자씨 한 알과 같으니 자라 나무가 되어 공중의 새들이 그 가지에 깃들였느니라',r:'누가복음 13:19'},
+{n:'포도나무',d:'주님과 하나 되어 열매 맺는 나무',s:'v',tc:'#7A5C3E',lc:'#3E8E41',fk:'g',fr:'#6B3FA0',v:'나는 포도나무요 너희는 가지라 그가 내 안에, 내가 그 안에 거하면 사람이 열매를 많이 맺나니',r:'요한복음 15:5'},
+{n:'에셀나무',d:'사막에서 하나님을 예배한 신실함의 나무',s:'p',tc:'#8A6A4A',lc:'#3F8F8A',fk:'',fr:'',v:'아브라함이 브엘세바에 에셀나무를 심고 거기서 영원하신 하나님 여호와의 이름을 부르니라',r:'창세기 21:33'}];
+
+/* ----- 색/수학 도우미 -----
+   hx: '#RRGGBB' → [R,G,B] 숫자 배열     rgb: [R,G,B] → '#RRGGBB' (0~255로 잘라 냄)
+   mx(a,b,t): 두 색을 t(0~1) 비율로 섞음   lt(색,k): k>0이면 밝게(흰색 쪽), k<0이면 어둡게
+   cp: 0~1로 제한(clamp)   ss(a,b,x): 부드러운 0→1 전환(smoothstep)   f1: 소수 1자리로(SVG 문자열 길이 절약) */
+const hx=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)),
+  rgb=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join(''),
+  mx=(a,b,t)=>{
+  const A=hx(a),C=hx(b);
+  return rgb(A.map((v,i)=>v+(C[i]-v)*t))
+},
+  lt=(h,k)=>rgb(hx(h).map(v=>k>=0?v+(255-v)*k:v*(1+k))),
+  cp=x=>Math.max(0,Math.min(1,x)),
+  ss=(a,b,x)=>{
+  const t=cp((x-a)/(b-a));
+  return t*t*(3-2*t)
+},
+  f1=n=>(+n).toFixed(1);
+
+/* ----- SVG 조각 만들기 -----
+   LF: 일반 잎 모양 path, GL: 포도잎 모양 path
+   LC(T,p): 진행률 p에 따라 연두색(새싹)에서 나무 고유 잎색으로 서서히 변하는 잎 색
+   gt(x,y,각도,크기,내용): 위치·회전·크기를 준 <g> 그룹 / ci: 원 / trunk: 사다리꼴 줄기(밑이 넓음) */
+const LF='M0 0C6-8 16-8 22 0C16 8 6 8 0 0Z',
+  GL='M0 0C-9-1-14-11-8-15C-6-17-3-16 0-13C3-16 6-17 8-15C14-11 9-1 0 0Z',
+  LC=(T,p)=>mx('#C9EE90',T.lc,cp((p-.08)/.9)),
+  gt=(x,y,a,k,s)=>'<g transform="translate('+f1(x)+' '+f1(y)+') rotate('+a+') scale('+f1(k)+')">'+s+'</g>',
+  ci=(x,y,r,c,o)=>'<circle cx="'+f1(x)+'" cy="'+f1(y)+'" r="'+f1(r)+'" fill="'+c+'"'+(o?' opacity="'+o+'"':'')+'/>',
+  trunk=(c,w,y)=>'<path d="M'+f1(100-w)+' 171L'+f1(100-w*.5)+' '+f1(y)+'H'+f1(100+w*.5)+'L'+f1(100+w)+' 171Z" fill="'+c+'"/>';
+
+/* SOIL: 흙 3겹 / MOUND: 심은 자리 작은 흙무덤 / PEB: 맨땅 단계의 작은 돌 / SPK: 완성 시 반짝이(✦) */
+const SOIL='<ellipse cx="100" cy="177" rx="86" ry="10" fill="#EBDCC5"/><ellipse cx="100" cy="172" rx="66" ry="9" fill="#CBA882"/><ellipse cx="100" cy="169" rx="44" ry="5.5" fill="#BB9269"/>',
+  MOUND='<ellipse cx="100" cy="170" rx="20" ry="4.2" fill="#B58C63"/>',
+  PEB='<ellipse cx="70" cy="171" rx="4" ry="2.2" fill="#A98258"/><ellipse cx="132" cy="173" rx="5" ry="2.6" fill="#A98258"/><ellipse cx="112" cy="176" rx="3" ry="1.8" fill="#A98258"/><ellipse cx="86" cy="177" rx="2.6" ry="1.6" fill="#A98258"/>',
+  SPK='<g fill="#F4C430"><text x="36" y="42" font-size="15" text-anchor="middle">✦</text><text x="166" y="60" font-size="12" text-anchor="middle">✦</text><text x="148" y="24" font-size="9" text-anchor="middle">✦</text></g>';
+
+/* FS: 열매가 달릴 위치 12곳(수관 반지름 R에 대한 상대 좌표) / HL: 둥근 나무 완성 직전의 하이라이트 점 위치 */
+const FS=[[-.5,.15],[.55,.25],[.05,.62],[-.18,-.35],[.35,-.4],[-.7,.5],[.72,.52],[.08,.1],[-.4,.7],[.45,.72],[-.05,-.72],[.78,0]];
+const HL=[[-.4,-.25],[.35,-.55],[.5,.1],[-.15,.3],[0,-.85],[-.6,.35]];
+
+/* fruit(종류,x,y,크기,색): 열매 하나 그리기. 'o' 올리브(길쭉), 'f' 무화과(위가 뾰족한 꼭지 포함), 그 외 둥근 열매 + 하이라이트 점 */
+function fruit(k,x,y,s,c){
+  s=Math.max(.85,s);
+  const rx=k=='o'?3.4:5.2,ry=k=='o'?4.6:k=='f'?5.8:5.2;
+  return '<ellipse cx="'+f1(x)+'" cy="'+f1(y)+'" rx="'+f1(rx*s)+'" ry="'+f1(ry*s)+'" fill="'+c+'" stroke="'+lt(c,-.28)+'" stroke-width=".8"/>'
+    +ci(x-rx*s*.3,y-ry*s*.35,1.2*s,'#fff',.55)+(k=='f'?'<path d="M'+f1(x)+' '+f1(y-ry*s)+'v-2" stroke="'+lt(c,-.3)+'" stroke-width="1.2"/>':'')
+}
+
+/* spr(): 줄기 꼭대기의 어린잎(떡잎) 2~5장. 진행률 .1~.26에서 커지고 .26~.38에서 서서히 사라짐(sl=투명도) */
+function spr(p,y1,th,lc){
+  const sl=1-ss(.26,.38,p);
+  if(sl<.02)return '';
+  const k=.3+.62*ss(.1,.26,p),
+    lf='<path d="'+LF+'" fill="'+lc+'"/>',
+    k2=k*.8*ss(.17,.27,p),
+    y2=y1+th*.35;
+  return '<g opacity="'+f1(sl)+'">'+gt(100,y1,-150,k,lf)+gt(100,y1,-30,k,lf)+(k2>.05?gt(100,y2,-165,k2,lf)+gt(100,y2,-15,k2,lf):'')
+    +gt(100,y1+1,-90,k*.55,lf)
+    +'</g>'
+}
+
+/* seedT(p): 진행률 0~10% 구간(씨앗 단계). 씨앗이 둘로 벌어지며(g) 싹이 올라오고(H) 작은 떡잎이 펼쳐짐 */
+function seedT(p){
+  const u=cp(p/.1),g=u*6.5,cy=166,sp=ss(.45,1,u);
+  let h='';
+  if(sp>0){
+    const H=sp*18;
+    h+='<path d="M100 '+cy+'V'+f1(cy-H)+'" stroke="#8CCB63" stroke-width="3" stroke-linecap="round" fill="none"/>';
+    if(u>.78){
+      const k=ss(.78,1,u)*.55,lf='<path d="'+LF+'" fill="#B4E07A"/>';
+      h+=gt(100,cy-H,-150,k,lf)+gt(100,cy-H,-30,k,lf)
+    }
+  }
+  h+='<rect x="'+f1(100-g)+'" y="'+(cy-5.5)+'" width="'+f1(2*g)+'" height="11" fill="#EFE3B0"/>';
+  h+='<path d="M'+f1(100-g)+' '+(cy-6)+'A8 6 0 0 0 '+f1(100-g)+' '+(cy+6)+'Z" fill="#9A6B43"/><path d="M'+f1(100+g)+' '
+    +(cy+6)+'A8 6 0 0 0 '+f1(100+g)+' '+(cy-6)+'Z" fill="#8B5E3C"/>';
+  return h
+}
+
+/* roundT(T,p,r,tot): 둥근 수관 나무(감람/조각목/로뎀/아몬드/겨자). 인자: T 나무정보, p 진행률(0~1), r 읽은 장 수, tot 목표 장 수
+   q: 성장 비율 / e: 완성 직전(80~100%) 정도 / lc,dk,lh: 잎의 기본·어두운·밝은 색 / cs: 수관 성장 / R: 수관 반지름
+   th: 줄기 높이 / tw: 줄기 굵기 / y1: 줄기 꼭대기 y / ct: 수관 중심 y / tc: 줄기색(연두→갈색) */
+function roundT(T,p,r,tot){
+  const q=(p-.1)/.9,
+    e=cp((p-.8)/.2),
+    lc=LC(T,p),
+    dk=lt(lc,-.13),
+    lh=lt(lc,.2),
+    cs=Math.pow(cp((p-.25)/.55),1.15),
+    R=50*cs*(1+.14*e),
+    th=16+62*Math.pow(q,.8),
+    tw=2.4+8*q,
+    y1=170-th,
+    ct=y1-.12*R,
+    tc=mx('#86C568',T.tc,ss(.12,.4,p));
+  let h=trunk(tc,tw,y1)+spr(p,y1,th,lc);
+  /* 36~60% 구간: 좌우로 뻗는 가지 4개와 가지 끝 잎 뭉치 */
+  const bs=ss(.36,.6,p);
+  if(bs>.02){
+    [[14,-1,46,26],[14,1,46,26],[34,-1,34,12],[34,1,34,12]].forEach(([dy,s,dx,rise])=>{
+      const sy=y1+dy,tx=100+s*dx*bs,ty=sy-rise*bs;
+      h+='<path d="M100 '+f1(sy)+'Q'+f1(100+s*dx*bs*.5)+' '+f1(sy-rise*bs*.1)+' '+f1(tx)+' '+f1(ty)+'" stroke="'+tc+'" stroke-width="'
+        +f1(2.2+1.6*bs)+'" stroke-linecap="round" fill="none"/>'
+        +ci(tx,ty,3.5+4.5*bs,lc)+ci(tx+s*4,ty-3,3+3.5*bs,dk)+ci(tx-s*3,ty-4,3+2.5*bs,lh)
+    })
+  }
+  /* 수관(둥근 잎 덩어리): 원 4개를 겹쳐 입체감. 열매 없는 나무는 완성 직전에 밝은 점(HL), 열매 있는 나무는 80%부터 열매가 1개씩 늘어 완성 시 12개 */
+  if(R>2.5){
+    h+=ci(100-.62*R,ct+.26*R,.68*R,dk)+ci(100+.62*R,ct+.26*R,.68*R,lt(lc,-.06))+ci(100,ct,.95*R,lc)+ci(100,ct-.5*R,.62*R,lh);
+    if(!T.fk&&e>0){
+      const n=Math.ceil(e*6);
+      for(let i=0;i<n;i++)
+        h+=ci(100+HL[i][0]*R,ct+HL[i][1]*R,.11*R,lt(lc,.38),.85)
+    }
+    if(T.fk){
+      const nF=r>=tot?12:p<.8?0:Math.min(11,1+Math.floor((p-.8)/.2*11));
+      for(let i=0;i<nF;i++)
+        h+=fruit(T.fk,100+FS[i][0]*R,ct+FS[i][1]*R,R/50,T.fr)
+    }
+  }
+  return h
+}
+
+/* coneT(T,p): 원뿔형 나무(백향목/에셀나무). 잎을 위에서 아래로 4단 삼각형으로 쌓고, 완성 직전에 밝은 점 장식 */
+function coneT(T,p){
+  const q=(p-.1)/.9,
+    e=cp((p-.8)/.2),
+    lc=LC(T,p),
+    cs=Math.pow(cp((p-.25)/.55),1.1),
+    tht=16+26*q,
+    y1=170-tht,
+    tw=2.4+7*q,
+    tc=mx('#86C568',T.tc,ss(.12,.4,p)),
+    yb=y1+12,
+    Hc=(2+94*cs)*(1+.1*e),
+    Wc=(6+38*cs)*(1+.1*e),
+    top=yb-Hc;
+  let h=trunk(tc,tw,y1)+spr(p,y1,tht,lc);
+  if(cs>.01){
+    for(let i=3;i>=0;i--){
+      const s=ss(i*.17,i*.17+.35,cs);
+      if(s<.02)continue;
+      const hw=Wc*(.42+.2*i)*s,ay=top+i*.2*Hc,by=top+(.4+.2*i)*Hc;
+      h+='<path d="M100 '+f1(ay)+'L'+f1(100+hw)+' '+f1(by)+'Q100 '+f1(by-hw*.2)+' '+f1(100-hw)+' '+f1(by)+'Z" fill="'+lt(lc,.12-i*.07)+'"/>'
+    }
+    if(e>0){
+      const n=Math.ceil(e*6),C=[[-.25,.62],[.3,.7],[0,.38],[-.35,.88],[.38,.9],[.05,.15]];
+      for(let i=0;i<n;i++)
+        h+=ci(100+C[i][0]*Wc,top+C[i][1]*Hc,2.2+e*1.5,lt(lc,.4),.8)
+    }
+  }
+  return h
+}
+
+/* palmT(T,p): 종려나무. 휘어 올라가는 줄기(곡선) + 줄기 마디 무늬 + 부채처럼 퍼지는 잎 11장.
+   잎은 각도 배열의 순서대로 하나씩 차례로 자라나고(f), 잎 하나는 두 곡선으로 둘러싼 폐곡선 + 중앙 잎맥선 */
+function palmT(T,p){
+  const q=cp((p-.1)/.9),
+    e=cp((p-.8)/.2),
+    lc=LC(T,p),
+    dk=lt(lc,-.14),
+    th=18+88*Math.pow(q,.9),
+    y1=170-th,
+    xt=100+10*q,
+    tw=3.4+5*q,
+    tc=mx('#86C568',T.tc,ss(.12,.4,p));
+  let h='<path d="M100 171Q'+f1(100-8*q)+' '+f1(170-th*.5)+' '+f1(xt)+' '+f1(y1)+'" stroke="'+tc+'" stroke-width="'+f1(tw)
+    +'" stroke-linecap="round" fill="none"/>';
+  if(q>.3){
+    for(let y=164;y>y1+8;y-=9){
+      const t=(170-y)/th,x=(1-t)*(1-t)*100+2*(1-t)*t*(100-8*q)+t*t*xt;
+      h+='<path d="M'+f1(x-tw*.45)+' '+f1(y)+'L'+f1(x+tw*.45)+' '+f1(y+1.5)+'" stroke="'+lt(tc,-.22)+'" stroke-width="1"/>'
+    }
+  }
+  [-62,62,-30,30,-86,86,0,-46,46,-74,74].forEach((A,i)=>{
+    const f=ss(.1+.075*i,.32+.075*i,p),L=(12+42*Math.pow(q,.85))*f*(1+.18*e);
+    if(L<2)return;
+    const a=A*Math.PI/180,
+      tx=xt+Math.sin(a)*L,
+      ty=y1-Math.cos(a)*L+L*.3*Math.abs(Math.sin(a)),
+      cx=tx-xt,
+      cy=ty-y1,
+      len=Math.hypot(cx,cy),
+      nx=-cy/len,
+      ny=cx/len,
+      mxp=xt+cx*.5,
+      myp=y1+cy*.5-L*.14,
+      w=L*(.17+.03*e);
+    h+='<path d="M'+f1(xt)+' '+f1(y1)+'Q'+f1(mxp+nx*w)+' '+f1(myp+ny*w)+' '+f1(tx)+' '+f1(ty)+'Q'+f1(mxp-nx*w)+' '+f1(myp-ny*w)
+      +' '+f1(xt)+' '+f1(y1)+'Z" fill="'+(i%2?lc:dk)+'"/><path d="M'+f1(xt)+' '+f1(y1)+'Q'+f1(mxp)+' '+f1(myp)+' '+f1(tx)
+      +' '+f1(ty)+'" stroke="'+lt(dk,-.2)+'" stroke-width=".8" fill="none"/>'
+  });
+  return h+ci(xt,y1,3,lt(tc,-.25))
+}
+
+/* bunch(x,y,색): 포도송이 하나(꼭지 + 포도알 6개를 3-2-1 모양으로) */
+function bunch(x,y,c){
+  let h='<path d="M'+f1(x)+' '+f1(y)+'v7" stroke="#7A5C3E" stroke-width="1.6"/>';
+  [[-6,11],[0,11],[6,11],[-3,17],[3,17],[0,23]].forEach(([dx,dy])=>{
+    h+='<circle cx="'+f1(x+dx)+'" cy="'+f1(y+dy)+'" r="3.8" fill="'+c+'" stroke="'+lt(c,-.3)+'" stroke-width=".6"/>'+ci(x+dx-1,y+dy-1.2,1,'#fff',.5)
+  });
+  return h
+}
+
+/* vineT(T,p,r,tot): 포도나무. 시렁(양쪽 기둥 + 위 가로대, 20~45%에 나타남) + 구불구불 자라는 덩굴 + 포도잎 +
+   55% 이후 가로대를 따라 좌우로 뻗는 덩굴 + 80%부터 포도송이가 늘어남(완성 시 8송이) */
+function vineT(T,p,r,tot){
+  const q=cp((p-.1)/.9),lc=LC(T,p),dk=lt(lc,-.14),tc=mx('#86C568',T.tc,ss(.12,.4,p));
+  let h='';
+  const tr=ss(.2,.45,p);
+  if(tr>.02)
+    h+='<g opacity="'+f1(tr)+'" stroke="#CDAE82" stroke-width="4.5" stroke-linecap="round" fill="none"><path d="M52 171V46M148 171V46M44 46H156"/></g>';
+  const Hv=14+110*Math.pow(q,.85),pts=[];
+  for(let d=0;d<=Hv;d+=4)
+    pts.push(f1(100+8*Math.sin(d/10))+' '+f1(170-d));
+  h+='<path d="M'+pts.join('L')+'" stroke="'+tc+'" stroke-width="'+f1(2.6+2.2*q)+'" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+  for(let d=12,j=0;d<=Hv-2;d+=15,j++){
+    const s=j%2?1:-1,x=100+8*Math.sin(d/10)+s*2.5,y=170-d;
+    h+=gt(x,y,s*58,.62+.5*cp((Hv-d)/45),'<path d="'+GL+'" fill="'+(j%2?lc:dk)+'"/>')
+  }
+  const aq=cp((q-.55)/.45),La=52*aq;
+  if(La>2){
+    [-1,1].forEach(s=>{
+      const ap=[];
+      for(let u=0;u<=La;u+=4)
+        ap.push(f1(100+s*u)+' '+f1(46+2.2*Math.sin(u/6)));
+      h+='<path d="M'+ap.join('L')+'" stroke="'+tc+'" stroke-width="2.8" stroke-linecap="round" fill="none"/>';
+      for(let u=9,m=0;u<=La;u+=12,m++)
+        h+=gt(100+s*u,46+2.2*Math.sin(u/6),m%2?180-s*12:s*12,.85,'<path d="'+GL+'" fill="'+(m%2?lc:dk)+'"/>')
+    })
+  }
+  const nC=r>=tot?8:p<.8?0:Math.min(7,1+Math.floor((p-.8)/.2*7));
+  [-14,14,-26,26,-38,38,-48,48].forEach((o,k)=>{
+    if(k<nC&&Math.abs(o)<=La+2)
+      h+=bunch(100+o,46+2.2*Math.sin(Math.abs(o)/6),T.fr)
+  });
+  return h
+}
+
+/* ----- 나무 SVG 만들기 + 캐시 -----
+   TC: 한 번 그린 SVG 문자열을 저장해 두는 캐시(같은 조건이면 다시 계산하지 않음, 13개를 넘으면 비움)
+   treeSvg: 진행률을 1/400 단위로 내림(완성 전에는 최소 .0025 보장 → 읽은 게 있으면 최소한 씨앗이 보임)한 뒤
+   '나무이름|목표장수|(0 / F=완성 / 진행률)'을 캐시 키로 사용 */
+const TC=new Map();
+function treeSvg(T,p,r,tot){
+  if(r&&r<tot)p=Math.max(Math.floor(p*400)/400,.0025);
+  const k=T.n+'|'+tot+'|'+(!r?0:r>=tot?'F':p);
+  let v=TC.get(k);
+  if(!v){
+    v=treeSvg0(T,p,r,tot);
+    if(TC.size>12)TC.clear();
+    TC.set(k,v)
+  }
+  return v
+}
+
+/* treeSvg0: 실제 그림 조립.
+   - 읽은 장이 0이면 흙 + 돌(맨땅)
+   - 아니면 외부 파일이 등록한 전용 그리기 함수 X(window.TREEFX[나무이름])를 먼저 시도하고,
+     없거나 오류가 나면(ok=0) 진행률 10% 미만은 씨앗(seedT), 이후는 나무 모양(s)에 맞는 기본 함수로 그림
+   - 완성(r>=tot)이면 반짝이 SPK 추가(전용 함수에 ns 표시가 있으면 생략) */
+function treeSvg0(T,p,r,tot){
+  let g=SOIL;
+  const X=window.TREEFX&&window.TREEFX[T.n];
+  let ok=0;
+  if(!r)
+    g+=PEB;
+  else{
+    if(X)try{
+      g+=X(T,p,r,tot);
+      ok=1
+    }catch(e){}
+    if(!ok)
+      g+=p<.1?seedT(p):(T.s=='r'?roundT:T.s=='p'?coneT:T.s=='m'?palmT:vineT)(T,p,r,tot)
+  }
+  return '<svg viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+T.n+'">'+g+MOUND+(r>=tot&&!(X&&X.ns)?SPK:'')
+    +'</svg>'
+}
+
+/* prog(t): 현재 목표(goal) 범위 안에서 '이번 회차에' 읽은 장 수. (base는 세지 않음 → 새로 읽기를 하면 나무가 다시 자람) */
+function prog(t){
+  const [a,b]=GR[t.goal];
+  let r=0;
+  for(let k=a;k<b;k++){
+    const x=t.read[k];
+    if(x)for(let i=0;i<x.length;i++)if(x[i])r++
+  }
+  return r
+}
+
+/* treeHtml(t): 나무 카드 전체 HTML.
+   - 나무 종류/목표 선택 드롭다운, 나무 그림, 단계 이름·퍼센트, 읽은 장 수, 성경 구절
+   - si: 단계 번호(0 맨땅 ~ 7 완성), pct: 퍼센트(읽었다면 최소 1%, 완성 전에는 99%를 넘지 않게 내림)
+   - 이전에 완성한 횟수(t.done)만큼 ★ (8개 초과 시 ★×N) */
+function treeHtml(t){
+  const T=TREES[t.tree],
+    tot=GT[t.goal],
+    r=prog(t),
+    p=r>=tot?1:r/tot,
+    si=!r?0:r>=tot?7:p<.1?1:p<.25?2:p<.4?3:p<.6?4:p<.8?5:6,
+    pct=r>=tot?100:r?Math.max(1,Math.floor(p*100)):0,
+    stars=t.done>0?'<div class="stars" title="이전에 완성한 횟수">'+(t.done<=8?'★'.repeat(t.done):'★×'+t.done)+'</div>':'';
+  return '<div class="card" style="border:2px solid '+PAL[t.color]+'"><div class="trow"><span class="inf tl">나무</span><select class="tsel" id="ts">'
+    +TREES.map((x,i)=>'<option value="'+i+'"'+(i==t.tree?' selected':'')+'>'+x.n+' ('+x.d+')</option>').join('')
+    +'</select></div>'
+    +'<div class="trow"><span class="inf tl">나의 목표</span><select class="tsel" id="tg">'
+    +Object.keys(GN).map(k=>'<option value="'+k+'"'+(k==t.goal?' selected':'')+'>'+GN[k]+'</option>').join('')
+    +'</select></div>'
+    +'<div class="tv">'+treeSvg(T,p,r,tot)+stars
+    +'</div><div class="tst"><b>'+SG[si][0]
+    +'</b> · '+SG[si][1]
+    +'</div>'
+    +'<div class="mini" style="text-align:center;margin-top:4px">읽은 장 '+r+' / '+tot+'장 · '+pct+'%</div>'
+    +'<div class="tvs">“'+esc(T.v)+'” ('+esc(T.r)+')</div></div>'
+}
+
+/* showFin: '완성했어요!' 팝업을 2.7초간 띄움(이미 떠 있던 것은 제거) */
+function showFin(){
+  document.querySelectorAll('.fin').forEach(x=>x.remove());
+  const d=document.createElement('div');
+  d.className='fin';
+  d.textContent='완성했어요!';
+  document.body.append(d);
+  setTimeout(()=>d.remove(),2700)
+}
+
+/* chk(t): 목표를 다 읽었고, 같은 목표로 아직 팝업을 안 띄웠다면(t.fin) 기록하고 팝업 표시. 같은 목표의 중복 축하 방지 */
+function chk(t){
+  if(prog(t)>=GT[t.goal]&&t.fin!==t.goal){
+    t.fin=t.goal;
+    save();
+    showFin()
+  }
+}
+
+/* foot: 화면 맨 아래 푸터('데이터 관리' 링크 + 버전) */
+const foot=()=>'<div class="ft"><a data-act="dm">데이터 관리</a><span>버전 '+VER+'</span></div>';
+
+/* ============================================================
+   tbHtml(t): '통독표 한 개' 화면 전체 HTML
+   f = 이 통독표의 (책,장)별 읽은 횟수 함수, n = 현재 책, a = 이번 회차 읽음 배열, cl = 표 색, N = 열 수(5/10)
+   seg = '5열 / 10열 / 전체' 버튼줄 (전체 모드면 'm'이 눌린 상태로 표시)
+   ============================================================ */
+function tbHtml(t){
+  const f=(b,i)=>cnt(t,b,i),
+    n=t.book,
+    a=t.read[n]||[],
+    cl=PAL[t.color],
+    N=S.ui.cols,
+    seg='<div class="sgr">'+[['5','5열'],['10','10열'],['m','전체']].map(x=>'<button class="b'+((S.ui.vw=='m'?'m':N)==x[0]?' on':'')+'" data-act="vw" data-v="'+x[0]+'">'+x[1]+'</button>').join('')
+    +'</div>';
+  /* cells: 현재 책의 장 번호 버튼들. 읽은 횟수 색(cc), 2회독 이상일 때 이번 회차에 읽은 칸은 ✓(.ck), 방금 누른 칸은 .pop 애니메이션 */
+  const cells=Array.from({length:B[n].c},(_,i)=>'<button class="c'+cc(f(n,i))+(a[i]&&t.round>1?' ck':'')+(pop==i?' pop':'')+'" data-i="'+i+'">'+(i+1)+'</button>').join('');
+  /* 반환: ① 몇 번째 읽는 중 + 진행 막대 카드 ② 칸 표(또는 전체 지도) 카드 ③ 새로 읽기/이번 회차만 남기기/삭제 버튼 ④ 나무 카드 ⑤ 푸터 */
+  return '<div class="card" style="background:'+cl+'55;border:2px solid '+cl+'"><div class="trow"><span class="inf">'+ORD[Math.min(t.round,10)]
+    +' 번째 읽는 중'+(t.start?' · '+t.start+' 시작':'')
+    +'</span></div>'+bars(st(f),'c')
+    +'</div>'
+    +'<div class="card" style="border:2px solid '+cl+'">'+seg+(S.ui.vw=='m'?secBtns(S.ui.tsec,'tsec')+mapHtml(f,S.ui.tsec,0,1)+'<div class="mini">칸을 누르면 읽은 곳을 표시하거나 지울 수 있어요. 책 이름을 누르면 그 책의 칸 표로 이동해요.</div>':'<div class="trow">'+bsel(f,n)
+    +'<span class="prog">'+rd(f,n)+' / '+B[n].c+'장</span></div><div class="g" style="--n:'+N+'">'+cells
+    +'</div><div class="mini">칸을 약 1초 길게 누른 채 밀면, 처음 누른 칸부터 손을 뗀 칸까지 한꺼번에 표시돼요. 읽은 칸에서 시작하면 한꺼번에 지워져요.</div>')
+    +'</div>'
+    +'<div class="acts"><button class="b" data-act="new">새로 읽기</button>'+(t.round>1?'<button class="b" data-act="keep">이번 회차만 남기기</button>':'')
+    +'<button class="b" data-act="del">이 통독표 삭제</button></div>'+treeHtml(t)+foot()
+}
+
+/* secBtns(현재값, 동작이름): '전체 / 신약만 / 구약만' 버튼줄. 동작이름은 data-act에 들어가 클릭 시 분기에 쓰임 */
+const secBtns=(cur,act)=>'<div class="sgr">'+[['a','전체'],['n','신약만'],['o','구약만']].map(x=>'<button class="b'+(cur==x[0]?' on':'')+'" data-act="'+act+'" data-v="'+x[0]+'">'+x[1]+'</button>').join('')
+  +'</div>';
+
+/* mapHtml(f,sec,un,link): 성경 66권 전체 지도(한 줄에 10장씩).
+   f 횟수 함수 / sec 범위(a,n,o) / un=1이면 중복제거(읽었으면 보라) / link=1이면 클릭 가능(책 라벨→그 책 표로, 칸→읽음 토글)
+   각 책은 10장씩 끊어 줄을 나누고, 줄의 첫 칸에는 책 약어 라벨(첫 줄만, 이후 줄은 빈 <s>)을 둠.
+   마지막 줄 남는 자리는 빈 <u>로 채워 정렬을 맞춤. 라벨 색은 그 책을 몇 번 완독했는지(mn) */
+function mapHtml(f,sec,un,link){
+  let h='<div class="map">';
+  B.forEach((k,b)=>{
+    if(sec=='n'&&b<OT||sec=='o'&&b>=OT)return;
+    if(b==0)h+='<h4>구약 39권 929장</h4>';
+    if(b==OT)h+='<h4>신약 27권 260장</h4>';
+    const m=mn(f,b),lc=un?(m>0?' vu':''):cc(m);
+    for(let s=0;s<k.c;s+=10){
+      h+=s?'<s></s>':'<div class="lb'+lc+'"'+(link?' data-bk="'+b+'"':'')+'>'+AB[b]+'</div>';
+      for(let i=s;i<s+10;i++){
+        if(i<k.c){
+          const v=f(b,i);
+          h+='<i class="'+(un?(v?'vu':''):cc(v).trim())+'"'+(link?' data-mb="'+b+'" data-mi="'+i+'"':'')+'>'+(i+1)+'</i>'
+        }else
+          h+='<u></u>'
+      }
+    }
+  });
+  return h+'</div>'
+}
+
+/* ovHtml(): '나의 통독 현황' 화면(모든 통독표를 합산).
+   f: 모든 표의 읽은 횟수를 더한 함수 / un: 중복제거 보기 여부
+   full: 모든 책 중 가장 적게 읽은 횟수 = 성경 전체를 완독한 횟수 */
+function ovHtml(){
+  const u=S.ui,un=u.view=='u',f=(b,i)=>S.tables.reduce((s,t)=>s+cnt(t,b,i),0),r=st(f);
+  let full=1e9;
+  B.forEach((k,b)=>{full=Math.min(full,mn(f,b))});
+  let h='<div class="card"><div class="trow"><span class="inf">완독 '+full+'회</span><span style="flex:1"></span><button class="b'
+    +(un?' on':'')+'" data-act="view">중복제거 보기</button></div>'+bars(r,un?'u':'c')
+    +'<div class="mini">합산한 통독표: '+S.tables.map(x=>esc(x.name)).join(', ')
+    +'</div></div>';
+  h+='<div class="card">'+secBtns(u.sec,'sec')+mapHtml(f,u.sec,un,0)+'</div>';
+  return h+foot()
+}
+
+/* banners(): 상단 안내 배너들(조건에 맞는 것만 쌓아서 반환)
+   ① 카카오톡 인앱 브라우저면 저장소가 분리되므로 외부 브라우저로 열도록 경고(kakaotalk://web/openExternal 사용)
+   ② 카톡이 아니고 홈 화면 앱(standalone)으로 실행 중도 아니면 '홈 화면에 추가' 안내(눌러서 닫으면 S.hint)
+   ③ 마지막 백업(또는 최초 사용)으로부터 30일(30*864e5 ms) 넘으면 백업 권유
+   ④ 처음 쓰는 사람용 사용법 팁(눌러서 닫으면 S.tip) */
+function banners(){
+  const ua=navigator.userAgent,ios=/iPhone|iPad/.test(ua);
+  let h='';
+  if(/KAKAOTALK/i.test(ua))
+    h+='<div class="bn">카카오톡 안에서 열렸어요. 여기서 쓴 기록은 다른 브라우저에서 보이지 않아요. 아래 단추를 눌러 사파리나 크롬으로 열어 주세요.<br><button class="b" data-act="kk">다른 브라우저로 열기</button><button class="b" data-act="cu">주소 복사</button><br>안 되면 '
+      +(ios?'오른쪽 아래':'오른쪽 위')+' 메뉴의 「다른 브라우저로 열기」를 눌러 주세요.</div>';
+  else if(!S.hint&&!(matchMedia('(display-mode: standalone)').matches||navigator.standalone))
+    h+='<div class="bn" data-act="hint">'+(ios?'아이폰: 사파리 아래 공유 버튼 → 「홈 화면에 추가」. 꼭 홈 화면의 아이콘으로 시작하세요.':'갤럭시: 메뉴(⋮) → 「홈 화면에 추가」 또는 「앱 설치」를 눌러 주세요.')
+      +'<br><b>눌러서 닫기</b></div>';
+  if(Date.now()-(S.lastT||S.since)>30*864e5)
+    h+='<div class="bn" data-act="dm">백업한 지 한 달이 지났어요. 눌러서 「데이터 관리」에서 백업해 두세요.</div>';
+  if(!S.tip&&S.ui.tab>=0)
+    h+='<div class="bn" data-act="tip">읽은 장의 번호를 눌러 표시하세요. 다시 누르면 지워져요. 번호를 약 1초 길게 누른 채 밀면 처음 누른 칸부터 손을 뗀 칸까지 한꺼번에 표시돼요. 또 읽고 싶으면 「새로 읽기」를 눌러요.<br><b>눌러서 닫기</b></div>';
+  return h
+}
+
+/* ============================================================
+   render(y): 화면 전체를 다시 그리는 핵심 함수. y가 있으면 그 스크롤 위치로 복원
+   - u.tab<0 이면 '나의 통독 현황', 아니면 해당 통독표
+   - 제목줄(이름 ✎ + 현황 버튼), 탭줄(색은 통독표 색, 현재 탭엔 ✎), 본문, 배너를 각각 innerHTML로 교체
+   ============================================================ */
+function render(y){
+  const u=S.ui;
+  if(u.tab>=S.tables.length)u.tab=0;
+  const ov=u.tab<0,t=ov?null:S.tables[u.tab];
+  applyFs();
+  $('#hd').innerHTML='<h2 id="tt">'+TR(22)+'<span>'+esc(S.name)+'의 성경읽기 ✎</span></h2><button class="b fx'+(ov?' on':'')+'" data-act="all">나의 통독 현황</button>';
+  $('#tabs').innerHTML=S.tables.map((x,i)=>{
+    const on=!ov&&u.tab==i;
+    return '<button class="b tab'+(on?' on':'')+'" style="background:'+PAL[x.color]+'" data-t="'+i+'">'+esc(x.name)+(on?' ✎':'')+'</button>'
+  }).join('')
+    +'<button class="b tab pl" data-act="add">＋ 새 통독표</button>';
+  $('#main').innerHTML=ov?ovHtml():tbHtml(t);
+  $('#ban').innerHTML=banners();
+  pop=-1;
+  if(y!=null)scrollTo(0,y)
+}
+
+/* refresh: 본 앱이 보이는 중이면 다시 그리고, 아니면 표지를 다시 그림 */
+const refresh=()=>{
+  if($('#app').style.display=='block')
+    render(0);
+  else
+    showCover()
+};
+
+/* gr: 시간대별 인사말(12시 전/18시 전/그 이후) */
+const gr=()=>{
+  const h=new Date().getHours();
+  return h<12?'좋은 아침이에요':h<18?'좋은 오후입니다':'평안한 저녁이에요'
+};
+
+/* showCover: 표지 내용 채우기. 이름이 있으면 인사+시작 버튼+이름바꾸기, 없으면 이름 입력칸. 이름 입력칸에서 Enter 치면 바로 시작 */
+function showCover(){
+  applyFs();
+  $('#tr').innerHTML=TR(64);
+  $('#cvb').innerHTML=(S.name?'<p class="gr">'+gr()+', '+esc(S.name)+'님.<br>오늘도 시작해볼까요?</p><button class="go" id="go">시작하기</button><div class="lks"><a id="chg">이름 바꾸기</a><a id="dm">데이터 관리</a></div>':'<p class="gr">이름을 적고 시작을 눌러 주세요</p><input id="nm" maxlength="12" placeholder="이름 입력" autocomplete="off"><button class="go" id="go">시작하기</button><div class="lks"><a id="dm">데이터 관리</a></div>')
+    +'<div class="mini" style="text-align:center">버전 '+VER
+    +'</div>';
+  const n=$('#nm');
+  if(n)n.onkeydown=e=>{if(e.key=='Enter')go()}
+}
+
+/* go: 시작하기. 이름이 비어 있으면 입력칸을 흔들고 안내, 있으면 저장 후 표지를 닫고 본 앱을 보여 줌 */
+function go(){
+  if(!S.name){
+    const n=$('#nm'),v=n.value.trim();
+    if(!v){
+      n.focus();
+      n.classList.add('shake');
+      setTimeout(()=>n.classList.remove('shake'),450);
+      toast('이름을 먼저 적어 주세요');
+      return
+    }
+    S.name=v;
+    save()
+  }
+  $('#cover').style.display='none';
+  $('#app').style.display='block';
+  render(0)
+}
+
+/* 표지 클릭 처리(이벤트 위임): 버튼의 id로 분기 — go 시작 / dm 데이터 관리 / chg 이름 바꾸기 */
+$('#cover').onclick=async e=>{
+  const id=e.target.id;
+  if(id=='go')
+    go();
+  else if(id=='dm')
+    showDM();
+  else if(id=='chg'){
+    const r=await askIn('이름을 수정해 주세요',S.name);
+    if(r){
+      S.name=r.v;
+      save();
+      showCover()
+    }
+  }
+};
+
+/* 제목(h2, id=tt)을 누르면 이름 수정 */
+$('#hd').onclick=async e=>{
+  if(!e.target.closest('#tt'))return;
+  const r=await askIn('이름을 수정해 주세요',S.name);
+  if(r){
+    S.name=r.v;
+    save();
+    render()
+  }
+};
+
+/* 새 버전 알림을 누르면 새로고침 */
+$('#upd').onclick=()=>location.reload();
+
+/* <select> 값이 바뀔 때: bs=책 선택(현재 책 저장 후 다시 그리고 첫 안 읽은 칸으로 스크롤), ts=나무 종류, tg=나무 목표.
+   render는 select를 새로 만들기 때문에, 바뀐 뒤 현재 스크롤 위치(scrollY)를 유지하며 다시 그림 */
+document.addEventListener('change',e=>{
+  const id=e.target.id;
+  if(id=='bs'){
+    S.tables[S.ui.tab].book=+e.target.value;
+    save();
+    render();
+    focusFirst()
+  }
+ else if(id=='ts'||id=='tg'){
+    const t=S.tables[S.ui.tab];
+    if(!t)return;
+    if(id=='ts')
+      t.tree=+e.target.value;
+    else
+      t.goal=e.target.value;
+    save();
+    render(scrollY)
+  }
+});
+
+/* ============================================================
+   showDM(): '데이터 관리' 전체 화면 — 글자 크기(보통/크게), 내보내기(파일), 복사하기(글자), 불러오기, 새 버전 확인
+   버튼마다 data-d 값으로 동작을 구분: x 닫기 / f0,f1 글자 크기 / exp 내보내기 / cpy 복사 / imp 불러오기 / chk 새 버전 확인
+   chk: fetch('./')로 서버에 접속되는지 확인한 뒤 1.8초 후 새로고침(서비스워커가 새 버전을 받아 오도록 유도)
+   ============================================================ */
+function showDM(){
+  const d=document.createElement('div');
+  d.className='dmv';
+  d.innerHTML='<div class="dmi"><div class="trow"><b>데이터 관리</b><span style="flex:1"></span><button class="b" data-d="x">닫기</button></div><div class="inf">글자 크기</div><div class="sgr" style="margin-top:10px">'
+    +['보통','크게'].map((x,i)=>'<button class="b'+(S.ui.fs==i?' on':'')+'" data-d="f'+i+'">'+x+'</button>').join('')
+    +'</div>'
+    +'<div class="inf" style="margin-top:18px">백업과 이동</div><button class="b w" data-d="exp">내보내기 (파일로 공유)</button><button class="b w" data-d="cpy">복사하기 (글자로)</button><button class="b w" data-d="imp">불러오기</button><div class="mini">마지막 백업: '
+    +(S.last||'아직 없음')
+    +'</div><div class="mini">폰을 바꿀 때: 옛 폰에서 「복사하기」 → 카톡 나에게 보내기. 새 폰에서 그 글자를 복사한 뒤 「불러오기」 → 글자 붙여넣기.</div>'
+    +'<button class="b w" style="margin-top:18px" data-d="chk">새 버전 확인</button><div class="mini" style="text-align:center">버전 '
+    +VER
+    +'</div></div>';
+  d.onclick=async e=>{
+    const k=e.target.closest('[data-d]');
+    if(!k)return;
+    const a=k.dataset.d;
+    if(a=='x'){
+      d.remove();
+      refresh()
+    }
+  else if(a[0]=='f'){
+      S.ui.fs=+a[1];
+      save();
+      applyFs();
+      d.querySelectorAll('[data-d^=f]').forEach(x=>x.classList.toggle('on',x.dataset.d==a))
+    }
+  else if(a=='exp'){
+      await exp();
+      d.remove();
+      showDM()
+    }
+  else if(a=='cpy'){
+      await cpy();
+      d.remove();
+      showDM()
+    }
+  else if(a=='imp')
+      impAsk();
+    else if(a=='chk'){
+      toast('확인 중이에요…');
+      try{await fetch('./')}catch(x){
+        toast('인터넷에 연결되어 있지 않아요');
+        return
+      }
+      setTimeout(()=>location.reload(),1800)
+    }
+  };
+  document.body.append(d)
+}
+
+/* ============================================================
+   메인 클릭 처리(이벤트 위임): document 전체에서 클릭을 받아, 눌린 요소에 달린 data-* 속성으로 분기
+     data-mi  : 전체 지도의 장 칸(data-mb=책번호) → 읽음 토글 + 되돌리기 토스트
+     data-i   : 칸 표의 장 칸 → 읽음 토글(책을 다 읽으면 축하 토스트)
+     data-bk  : 지도의 책 라벨 → 그 책의 칸 표로 이동
+     data-t   : 통독표 탭 → 같은 탭을 또 누르면 이름/색 수정, 다른 탭이면 이동
+     data-act : 나머지 버튼들(아래 switch)
+   팝업(.mo) 안의 클릭이거나 본 앱이 안 보이는 상태면 무시.
+   y = 클릭 시점 스크롤 위치(다시 그린 뒤 같은 위치로 복원), ov = 현황 화면 여부, t = 현재 통독표
+   ============================================================ */
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-act],[data-i],[data-t],[data-bk],[data-mi]');
+  if(!el||el.closest('.mo')||$('#app').style.display!='block')
+    return;
+  const D=el.dataset,u=S.ui,y=scrollY,ov=u.tab<0,t=S.tables[u.tab];
+  if(D.mi!=null){
+    const b=+D.mb,i=+D.mi,a=t.read[b]||(t.read[b]=Array(B[b].c).fill(0)),sn=snap();
+    a[i]=a[i]?0:1;
+    save();
+    render(y);
+    toastU(B[b].n+' '+(i+1)+'장을 '+(a[i]?'읽음으로 표시했어요':'읽음 표시를 지웠어요'),sn);
+    chk(t);
+    return
+  }
+  if(D.i!=null){
+    const a=t.read[t.book]||(t.read[t.book]=Array(B[t.book].c).fill(0)),i=+D.i;
+    a[i]=a[i]?0:1;
+    pop=a[i]?i:-1;
+    save();
+    render(y);
+    if(a[i]&&a.every(x=>x))
+      toast(B[t.book].n+' 읽기를 마쳤어요. 축하해요!');
+    chk(t);
+    return
+  }
+  if(D.bk!=null){
+    t.book=+D.bk;
+    u.vw='g';
+    save();
+    render(0);
+    focusFirst();
+    return
+  }
+  if(D.t!=null){
+    if(+D.t==u.tab){
+      const r=await askIn('통독표 이름과 색을 골라 주세요',t.name,t.color);
+      if(r){
+        t.name=r.v;
+        t.color=r.c;
+        save();
+        render(y)
+      }
+    }else{
+      u.tab=+D.t;
+      save();
+      render(0);
+      focusFirst()
+    }
+    return
+  }
+  switch(D.act){
+    /* vw: 표 보기 전환. '전체'는 토글, 5/10은 칸 표로 돌아가며 열 수 변경 */
+    case 'vw':
+      clr();
+      if(D.v=='m')
+        u.vw=u.vw=='m'?'g':'m';
+      else{
+        u.vw='g';
+        u.cols=+D.v
+      }
+      save();
+      render(y);
+      break;
+    /* tsec: 표의 전체 보기 범위 / all: 나의 통독 현황으로 / view: 중복제거 보기 토글 / sec: 현황 지도 범위 */
+    case 'tsec':
+      clr();
+      u.tsec=D.v;
+      save();
+      render(y);
+      break;
+    case 'all':
+      u.tab=-1;
+      save();
+      render(0);
+      break;
+    case 'view':
+      clr();
+      u.view=u.view=='u'?'c':'u';
+      save();
+      render(y);
+      break;
+    case 'sec':
+      clr();
+      u.sec=D.v;
+      save();
+      render(y);
+      break;
+    /* hint/tip: 안내 배너 닫기(다시 안 뜨게 기록) / dm: 데이터 관리 열기 */
+    case 'hint':
+      S.hint=1;
+      save();
+      render(y);
+      break;
+    case 'tip':
+      S.tip=1;
+      save();
+      render(y);
+      break;
+    case 'dm':
+      showDM();
+      break;
+    /* kk: 카카오톡 인앱 브라우저에서 외부 브라우저로 열기 / cu: 현재 주소를 클립보드에 복사 */
+    case 'kk':
+      location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(location.href);
+      break;
+    case 'cu':
+      try{
+        await navigator.clipboard.writeText(location.href);
+        toast('주소를 복사했어요. 사파리나 크롬 주소창에 붙여넣어 주세요')
+      }catch(x){toast('복사하지 못했어요')}
+      break;
+    /* add: 새 통독표 만들기(이름과 색 입력). 기본 색은 표 개수에 따라 돌려가며 */
+    case 'add':
+      {
+        const r=await askIn('새 통독표 이름을 적어 주세요','새 통독표',S.tables.length%6);
+        if(r){
+          S.tables.push(mk(r.v,r.c));
+          u.tab=S.tables.length-1;
+          save();
+          render(0)
+        }
+        break
+      }
+    /* new: '새로 읽기'(다음 회독 시작). 체크가 없으면 안내만.
+         확인 → 기록 남길지 질문(0 남기기 / 1 남기지 않기 / 2 취소)
+           남기기: 이번 회차 읽은 장을 base에 누적(최대 9회)하고 read를 비운 뒤 round+1
+           남기지 않기: read와 base를 모두 지우고 1회차로 되돌림(한 번 더 확인)
+         나무를 완성한 상태였다면 done(★ 횟수)을 1 올리고 fin 초기화 → 나무가 다시 자람. 실행 후 되돌리기 가능 */
+    case 'new':
+      {
+        if(!hasMark(t)){
+          toast('새로 읽을 체크가 아직 없어요');
+          break
+        }
+        if(await ask('지금까지 화면에 체크한 기록을 삭제할까요?',['확인','취소'])!=0)
+          break;
+        const q=await ask('이 통독표에서 읽은 기록은 남길까요?',['남기기','남기지 않기','취소']);
+        if(q==2)break;
+        if(q==1&&await ask('읽은 기록을 모두 완전히 삭제하겠습니다.',['확인','취소'])!=0)
+          break;
+        const sn=snap();
+        if(prog(t)>=GT[t.goal])t.done=(t.done|0)+1;
+        t.fin='';
+        if(q==0){
+          Object.keys(t.read).forEach(b=>{
+            const a=t.base[b]||(t.base[b]=Array(B[b].c).fill(0));
+            t.read[b].forEach((v,i)=>{a[i]=Math.min(9,a[i]+v)})
+          });
+          t.read={};
+          t.round++
+        }
+   else{
+          t.read={};
+          t.base={};
+          t.round=1
+        }
+        t.start=today();
+        save();
+        render(0);
+        toastU(q==0?'기록을 남기고 새로 시작했어요':'처음부터 새로 시작했어요',sn);
+        break
+      }
+    /* keep: '이번 회차만 남기기' — 이전 회차 누적(base)을 지우고 1회차로 돌아감(이번에 체크한 칸만 1회로 남음) */
+    case 'keep':
+      if(await ask('이전에 읽은 기록은 지우고, 이번에 체크한 칸만 남길까요?<br>이번에 읽은 칸은 노랑으로, 나머지는 흰색으로 바뀌고 첫 번째 읽기로 돌아가요.',['확인','취소'])==0){
+        const sn=snap();
+        t.base={};
+        t.round=1;
+        save();
+        render(y);
+        toastU('이번 회차만 남겼어요',sn)
+      }
+      break;
+    /* del: 통독표 삭제(두 번 확인). 하나도 안 남으면 기본 표를 새로 만들고, 첫 탭으로 이동. 되돌리기 가능 */
+    case 'del':
+      {
+        if(await ask('<span class="nw">지금 읽고 계신</span> <span class="nn">「'+esc(t.name)+'」</span> <span class="nw">통독표가 사라져요.</span><br><span class="nw">그래도 삭제하시겠어요?</span>',['삭제하기','취소'])!=0)
+          break;
+        if(await ask('<span class="nw">읽은 기록을 모두</span> <span class="nw">완전히 삭제하겠습니다.</span><br><span class="nw">나의 통독 현황에서도</span> <span class="nw">줄어들어요.</span>',['확인','취소'])!=0)
+          break;
+        const sn=snap();
+        S.tables.splice(u.tab,1);
+        if(!S.tables.length)S.tables.push(mk('내 통독표',0));
+        u.tab=0;
+        save();
+        render(0);
+        toastU('삭제했어요',sn);
+        break
+      }
+  }
+});
+
+/* ============================================================
+   백업/복원
+   ps(배열→'0101..' 문자열) / us(문자열→숫자 배열) : 파일 크기를 줄이려고 읽음 배열을 문자열로 압축/복원
+   mp(객체, 함수): 객체의 각 값에 함수를 적용한 새 객체
+   pt(t): 저장용으로 통독표 변환(read/base 압축) / ut(t): 불러온 통독표를 검증·보정하며 복원(누락 값 기본값, 범위 제한)
+   pack(): 백업 전체를 JSON 문자열로 {app:'bible', v:3, data:{name, tables}}
+   stamp(): 마지막 백업 시각 기록(백업 권유 배너 기준)
+   ============================================================ */
+const ps=a=>a.join(''),
+  us=s=>typeof s=='string'?s.split('').map(Number):s,
+  mp=(o,f)=>Object.fromEntries(Object.entries(o||{}).map(([b,a])=>[b,f(a)]));
+const pt=t=>({id:t.id,name:t.name,color:t.color,round:t.round,start:t.start,book:t.book,tree:t.tree,goal:t.goal,done:t.done,fin:t.fin,read:mp(t.read,ps),base:mp(t.base,ps)});
+const ut=t=>({id:t.id||uid(),name:t.name||'통독표',color:t.color|0,round:t.round||1,start:t.start||'',book:t.book|0,tree:Math.min(9,Math.max(0,t.tree|0)),goal:/^[ano]$/.test(t.goal)?t.goal:'a',done:t.done|0,fin:t.fin||'',read:mp(t.read,us),base:mp(t.base,us)});
+const pack=()=>JSON.stringify({app:'bible',v:3,data:{name:S.name,tables:S.tables.map(pt)}});
+const stamp=()=>{
+  S.last=new Date().toLocaleDateString('ko-KR');
+  S.lastT=Date.now();
+  save()
+};
+
+/* exp(): 파일로 내보내기. '성경통독백업_YYYYMMDD.json'.
+   공유 시트(navigator.share, 파일 공유 지원 시)를 먼저 시도하고, 사용자가 취소(AbortError)하면 조용히 종료,
+   그 외 실패하거나 미지원이면 일반 다운로드 링크로 저장 */
+async function exp(){
+  const d=new Date(),
+    p=n=>String(n).padStart(2,'0'),
+    fn='성경통독백업_'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'.json';
+  const file=new File([pack()],fn,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({files:[file]});
+      stamp();
+      return
+    }catch(e){if(e.name=='AbortError')return}
+  }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(file);
+  a.download=fn;
+  a.click();
+  stamp()
+}
+
+/* cpy(): 글자로 복사. 'BIBLE1:' + (JSON을 UTF-8→base64로 인코딩한 글자). 카톡 '나에게 보내기'에 붙이기 쉽게 한 형식.
+   클립보드 API가 막히면 임시 textarea + execCommand('copy')로 대체 */
+async function cpy(){
+  const t='BIBLE1:'+btoa(unescape(encodeURIComponent(pack())));
+  try{await navigator.clipboard.writeText(t)}catch(e){
+    const x=document.createElement('textarea');
+    x.value=t;
+    document.body.append(x);
+    x.select();
+    document.execCommand('copy');
+    x.remove()
+  }
+  stamp();
+  toast('복사했어요. 카톡 나에게 보내기에 붙여넣으세요')
+}
+
+/* parse(s): 붙여넣은 글자 또는 파일 내용을 해석. 'BIBLE1:'가 있으면 그 뒤를 base64 복호화, 없으면 그대로 JSON으로 읽음. 잘못되면 예외 발생 */
+function parse(s){
+  s=String(s).trim();
+  const i=s.indexOf('BIBLE1:');
+  return JSON.parse(i>=0?decodeURIComponent(escape(atob(s.slice(i+7).replace(/\s/g,'')))):s)
+}
+
+/* askText(): 백업 글자를 붙여넣는 팝업(textarea). 불러오기를 누르면 입력값, 취소면 null */
+function askText(){
+  return new Promise(r=>{
+    const d=document.createElement('div');
+    d.className='mo';
+    d.innerHTML='<div class="md"><p>복사해 둔 백업 글자를 붙여넣어 주세요.</p><textarea id="pt" rows="5" style="font-size:.8rem"></textarea><button data-q="0">불러오기</button><button data-q="1">취소</button></div>';
+    d.onclick=e=>{
+      const i=e.target.dataset.q;
+      if(i!=null){
+        const v=$('#pt').value;
+        d.remove();
+        r(i==0?v:null)
+      }
+    };
+    document.body.append(d)
+  })
+}
+
+/* impAsk(): 불러오기 방식 선택 — 0 글자 붙여넣기 / 1 파일 선택(숨겨진 #imp 클릭) / 2 취소 */
+async function impAsk(){
+  const q=await ask('어떻게 불러올까요?',['글자 붙여넣기 (쉬워요)','파일 선택','취소']);
+  if(q==1)
+    $('#imp').click();
+  else if(q==0){
+    const v=await askText();
+    if(v){
+      try{await apply(parse(v).data)}catch(x){toast('붙여넣은 글자가 올바르지 않아요')}
+    }
+  }
+}
+
+/* apply(d): 불러온 데이터 d를 실제로 적용.
+   - tables 배열이 없으면 오류(throw 0)
+   - 합치기(0): 같은 id의 통독표가 있으면 읽음은 합집합(OR), base는 칸별 최댓값, round/done은 큰 값 유지. 없으면 새로 추가
+   - 덮어쓰기(1): 현재 기록을 모두 백업 내용으로 교체(한 번 더 확인)
+   - 끝나면 데이터 관리 화면을 닫고 다시 그린 뒤 되돌리기 토스트 */
+async function apply(d){
+  if(!d||!Array.isArray(d.tables))throw 0;
+  const T=d.tables.map(ut);
+  const c=await ask('백업에 통독표가 '+T.length+'개 있어요.',['합치기 (지금 기록 유지)','덮어쓰기 (지금 기록 삭제)','취소']);
+  if(c==2)return;
+  if(c==1&&await ask('지금 기록이 모두 사라지고 백업 내용으로 바뀌어요.<br>정말 덮어쓸까요?',['덮어쓰기','취소'])!=0)
+    return;
+  const sn=snap();
+  if(c==1){
+    S.tables=T;
+    S.name=d.name||S.name
+  }
+ else{
+    T.forEach(t=>{
+      const m=S.tables.find(x=>x.id==t.id);
+      if(!m)
+        S.tables.push(t);
+      else{
+        Object.keys(t.read).forEach(b=>{
+          const a=m.read[b]||(m.read[b]=Array(B[b].c).fill(0));
+          t.read[b].forEach((v,i)=>{if(v)a[i]=1})
+        });
+        Object.keys(t.base).forEach(b=>{
+          const a=m.base[b]||(m.base[b]=Array(B[b].c).fill(0));
+          t.base[b].forEach((v,i)=>{a[i]=Math.max(a[i],v)})
+        });
+        m.round=Math.max(m.round,t.round);
+        m.done=Math.max(m.done|0,t.done|0)
+      }
+    });
+    if(!S.name)S.name=d.name||''
+  }
+  if(!S.tables.length)S.tables.push(mk('내 통독표',0));
+  S.ui.tab=0;
+  save();
+  document.querySelectorAll('.dmv').forEach(x=>x.remove());
+  refresh();
+  toastU(c==1?'덮어썼어요':'불러왔어요',sn)
+}
+
+/* 파일 선택창에서 파일을 고르면 내용을 읽어 적용. 끝나면 value를 비워 같은 파일을 다시 고를 수 있게 함 */
+$('#imp').onchange=async e=>{
+  const f=e.target.files[0];
+  if(!f)return;
+  try{await apply(parse(await f.text()).data)}catch(x){toast('올바른 백업 파일이 아니에요')}
+  e.target.value=''
+};
+
+/* focusFirst(): 칸 표에서 '아직 안 읽은 첫 장'을 찾아 화면 가운데로 스크롤(이어 읽기 편하게).
+   전체 지도 모드이거나, 첫 줄(열 수 이내)에 있으면 스크롤하지 않음 */
+function focusFirst(){
+  const t=S.tables[S.ui.tab];
+  if(!t||S.ui.vw=='m')return;
+  const a=t.read[t.book]||[],n=B[t.book].c;
+  let i=0;
+  while(i<n&&a[i])i++;
+  if(i>=n||i<S.ui.cols)return;
+  const c=document.querySelector('.g .c[data-i="'+i+'"]');
+  if(c)c.scrollIntoView({block:'center'})
+}
+
+/* ============================================================
+   길게 눌러 범위 선택(터치 전용)
+   LP: 진행 중인 길게 누르기 상태 {g 칸 그리드, x,y 시작 좌표, i0 시작 칸, i1 현재 칸, on 길게 누르기 활성, mv 칸을 옮겼는지, tm 타이머}
+   흐름: touchstart(600ms 타이머 시작) → 타이머가 끝나면 on=1(진동+선택 표시)
+         → touchmove(on 상태에서 스크롤을 막고 손가락 아래 칸을 i1로 갱신) → touchend(범위 일괄 적용)
+   ============================================================ */
+let LP=null;
+
+/* mark(): i0~i1 범위의 칸에 .sel(굵은 테두리) 표시 */
+function mark(){
+  if(!LP)return;
+  const lo=Math.min(LP.i0,LP.i1),hi=Math.max(LP.i0,LP.i1);
+  LP.g.querySelectorAll('.c').forEach(c=>{
+    const i=+c.dataset.i;
+    c.classList.toggle('sel',i>=lo&&i<=hi)
+  })
+}
+
+/* endLP(): 타이머 해제, 선택 표시 제거, 상태 초기화 */
+function endLP(){
+  if(LP){
+    clearTimeout(LP.tm);
+    LP.g.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));
+    LP=null
+  }
+}
+
+/* touchstart: 칸 표의 칸에서 한 손가락으로 시작했을 때만(현황 화면 제외). passive:true라 스크롤 성능에 영향 없음 */
+document.addEventListener('touchstart',e=>{
+  const c=e.target.closest('.g .c');
+  if(!c||e.touches.length>1||S.ui.tab<0)return;
+  const p=e.touches[0],i=+c.dataset.i;
+  LP={g:c.parentNode,x:p.clientX,y:p.clientY,i0:i,i1:i,on:0,mv:0};
+  LP.tm=setTimeout(()=>{
+    if(!LP)return;
+    LP.on=1;
+    if(navigator.vibrate)navigator.vibrate(30);
+    mark()
+  },600)
+},{passive:true});
+
+/* touchmove: 길게 누르기 활성 전에 10px 넘게 움직이면 일반 스크롤로 보고 취소.
+   활성 후에는 preventDefault(passive:false 필요)로 스크롤을 막고, elementFromPoint로 손가락 밑의 칸을 찾아 범위 끝(i1)으로 갱신 */
+document.addEventListener('touchmove',e=>{
+  if(!LP)return;
+  const p=e.touches[0];
+  if(!LP.on){
+    if(Math.hypot(p.clientX-LP.x,p.clientY-LP.y)>10){
+      clearTimeout(LP.tm);
+      LP=null
+    }
+    return
+  }
+  e.preventDefault();
+  const el=document.elementFromPoint(p.clientX,p.clientY),c=el&&el.closest('.g .c');
+  if(c&&c.parentNode===LP.g){
+    LP.i1=+c.dataset.i;
+    if(LP.i1!=LP.i0)LP.mv=1;
+    mark()
+  }
+},{passive:false});
+
+/* touchend: 길게 누르기가 아니었다면 일반 탭(클릭 처리에 맡김). 활성이었다면 preventDefault로 뒤따르는 click을 막고,
+   칸을 옮기지 않았다면 취소, 옮겼다면 범위 전체를 '시작 칸의 반대 상태'로 일괄 설정(읽은 칸에서 시작→모두 지움, 안 읽은 칸에서 시작→모두 읽음) */
+document.addEventListener('touchend',e=>{
+  if(!LP)return;
+  clearTimeout(LP.tm);
+  const L=LP;
+  if(!L.on){
+    LP=null;
+    return
+  }
+  e.preventDefault();
+  if(!L.mv){
+    endLP();
+    return
+  }
+  const t=S.tables[S.ui.tab],
+    bk=t.book,
+    n=B[bk].c,
+    lo=Math.min(L.i0,L.i1),
+    hi=Math.min(n-1,Math.max(L.i0,L.i1)),
+    a=t.read[bk]||(t.read[bk]=Array(n).fill(0));
+  const on=a[L.i0]?0:1,sn=snap(),y=scrollY;
+  for(let i=lo;i<=hi;i++)a[i]=on;
+  LP=null;
+  save();
+  render(y);
+  toastU((hi-lo+1)+(on?'칸을 읽음으로 표시했어요':'칸의 표시를 지웠어요'),sn);
+  chk(t)
+},{passive:false});
+
+/* 터치가 시스템에 의해 취소되면 선택 상태 정리 / 칸을 길게 눌렀을 때 뜨는 기본 메뉴(contextmenu) 차단 */
+document.addEventListener('touchcancel',endLP);
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.g'))e.preventDefault()});
+
+/* ===== 서비스워커(sw.js): 오프라인 실행과 새 버전 감지 =====
+   had: 처음 접속이 아니라 이미 서비스워커가 제어 중이었는지.
+   controllerchange: 새 서비스워커로 교체되면 한 번만(__rl) 자동 새로고침(처음 설치 때는 새로고침 안 함)
+   message 'update': sw.js가 새 버전을 알리면 상단 업데이트 배너 표시 */
+if('serviceWorker'in navigator){
+  const had=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(had&&!window.__rl){
+      window.__rl=1;
+      location.reload()
+    }
+  });
+  navigator.serviceWorker.addEventListener('message',e=>{
+    if(e.data=='update')$('#upd').style.display='block'
+  })
+}
+
+/* 시작점: 표지를 그림. 이후는 사용자의 '시작하기' 클릭(go)에서 이어짐 */
+showCover();
+</script></body></html>
